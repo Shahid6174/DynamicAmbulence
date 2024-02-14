@@ -1,0 +1,88 @@
+Name: Shahid
+Age: 16
+Blood Group: O-ve
+Hospital ID: 9798
+Vaccines Done: n
+Area of Treatment: Cardiovascular
+Insurance: no
+Phone Number: 798799880
+Hospital Assigned: 8.Cloudnine_Hospital(marathahalli)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Rahul
+Age: 19
+Blood Group: B+ve
+Hospital ID: 1234
+Vaccines Done: y
+Area of Treatment: Cardiovascular
+Insurance: yes
+Phone Number: 798779879
+Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Raj
+Age: 19
+Blood Group: O+ve
+Hospital ID: 1333
+Vaccines Done: y
+Area of Treatment: ENT
+Insurance: yes
+Phone Number: 798798799
+Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Rai
+Age: 89
+Blood Group: B+ve
+Hospital ID: 1334
+Vaccines Done: y
+Area of Treatment: Kidney
+Insurance: no
+Phone Number: 798799879
+Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Optimal Cost: 3000.00 INR
+-----------------
+Name: Sai
+Age: 77
+Blood Group: B+ve
+Hospital ID: 1445
+Vaccines Done: y
+Area of Treatment: Eyes
+Insurance: no
+Phone Number: 798798792
+Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sid
+Age: 19
+Blood Group: B+ve
+Hospital ID: 1332
+Vaccines Done: y
+Area of Treatment: Orthopaedic
+Insurance: yes
+Phone Number: 798798790
+Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Optimal Cost: 3000.00 INR
+-----------------
+Name: Richard
+Age: 12
+Blood Group: B+ve
+Hospital ID: 1233
+Vaccines Done: y
+Area of Treatment: Orthopaedic
+Insurance: yes
+Phone Number: 798790022
+Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: ggth
+Age: 67
+Blood Group: b
+Hospital ID: 5555
+Vaccines Done: y
+Area of Treatment: hyhu
+Insurance: no
+Phone Number: 7867867
+Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Optimal Cost: 3000.00 INR
+-----------------

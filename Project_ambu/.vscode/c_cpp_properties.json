@@ -1,0 +1,60 @@
+{
+  "configurations": [
+    {
+      "name": "windows-gcc-x86",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "compilerPath": "C:/MinGW/bin/gcc.exe",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "windows-gcc-x86",
+      "compilerArgs": [
+        ""
+      ]
+    },
+    {
+      "name": "GTK",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "cStandard": "c11",
+      "cppStandard": "gnu++14",
+      "intelliSenseMode": "windows-gcc-x86"
+    },
+    {
+      "name": "gtkbin",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "cStandard": "c11",
+      "cppStandard": "gnu++14",
+      "intelliSenseMode": "windows-gcc-x86"
+    },
+    {
+      "name": "gtk/gtk.h",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "cStandard": "c11",
+      "cppStandard": "gnu++14",
+      "intelliSenseMode": "windows-gcc-x86"
+    }
+  ],
+  "version": 4
+}
