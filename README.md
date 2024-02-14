@@ -4,15 +4,15 @@ This project is a Dynamic Ambulance Dispatch System designed to efficiently allo
 
 The main objectives of this system are:
 
-Emergency Response Optimization: To swiftly identify the nearest hospital to an emergency location, considering factors like road conditions and casualties.
+1. Emergency Response Optimization: To swiftly identify the nearest hospital to an emergency location, considering factors like road conditions and casualties.
 
-Patient Admission Management: To manage patient admissions to hospitals based on their proximity, available resources, and severity of their condition.
+2. Patient Admission Management: To manage patient admissions to hospitals based on their proximity, available resources, and severity of their condition.
 
-Efficient Resource Allocation: To optimize the allocation of ambulance resources by determining the shortest routes and optimal hospitals for patient treatment.
+3. Efficient Resource Allocation: To optimize the allocation of ambulance resources by determining the shortest routes and optimal hospitals for patient treatment.
 
-Data Management: To maintain a record of patient details, including their name, age, medical history, and contact information, for effective communication and follow-up.
+4. Data Management: To maintain a record of patient details, including their name, age, medical history, and contact information, for effective communication and follow-up.
 
-User Interface: To provide a user-friendly interface for emergency responders to input emergency details, select hospitals, and manage patient admissions.
+5. User Interface: To provide a user-friendly interface for emergency responders to input emergency details, select hospitals, and manage patient admissions.
 
 The system utilizes graph algorithms like Dijkstra's and Floyd-Warshall to calculate shortest paths and optimal routes between emergency locations and hospitals. It also employs linked lists and file I/O operations for efficient data storage and retrieval.
 
