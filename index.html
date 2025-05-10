@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Ambulance Dispatch System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dynamic Ambulance Dispatch System</h1>
+            <p id="current-time">Hospitals and Casualties data obtained on <span id="date-time"></span></p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="find-hospital">Find Hospital</button>
+                    <button class="tab-btn" data-tab="hospital-name">Hospital Names</button>
+                    <button class="tab-btn" data-tab="hospital-list">Hospitals List</button>
+                </div>
+
+                <div class="tab-content active" id="find-hospital">
+                    <h2>Find Hospital</h2>
+                    <div class="form-group">
+                        <label for="emergency">Is it a case of emergency?</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="emergency" class="toggle-input">
+                            <label for="emergency" class="toggle-label"></label>
+                            <span id="emergency-status">No</span>
+                        </div>
+                    </div>
+
+                    <div id="emergency-form">
+                        <div class="form-group">
+                            <label for="location">Select your nearest location:</label>
+                            <select id="location" class="select-input">
+                                <option value="">-- Select Location --</option>
+                                <option value="1">1. Rajaji Nagar</option>
+                                <option value="2">2. Sahakar Nagar</option>
+                                <option value="3">3. Sanjaynagar</option>
+                                <option value="4">4. Yeshwanthpur</option>
+                                <option value="5">5. Nagarbavi</option>
+                                <option value="6">6. Bannerghatta</option>
+                                <option value="7">7. Shanti Nagar</option>
+                                <option value="8">8. Marathahalli</option>
+                                <option value="9">9. Sarjapur</option>
+                                <option value="10">10. Jayanagar</option>
+                                <option value="11">11. Bommasandra</option>
+                                <option value="12">12. Whitefield</option>
+                                <option value="13">13. Krishnarajapuram</option>
+                                <option value="14">14. Yelahanka</option>
+                                <option value="15">15. Kengeri</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="destination-hospital-container" style="display: block;">
+                            <label for="destination-hospital">Select the hospital you want to go to:</label>
+                            <select id="destination-hospital" class="select-input">
+                                <option value="">-- Select Hospital --</option>
+                                <option value="1">1. Suguna Hospital (Rajajinagar)</option>
+                                <option value="2">2. Aster CMI Hospital (Sahakarnagar)</option>
+                                <option value="3">3. MS Ramaiah Hospital (Sanjaynagar)</option>
+                                <option value="4">4. People's Tree Hospital (Yeshwanthpur)</option>
+                                <option value="5">5. Fortis Hospital (Nagarbhavi)</option>
+                                <option value="6">6. Apollo Hospital (Bannerghatta)</option>
+                                <option value="7">7. HCG Hospital (Shantinagar)</option>
+                                <option value="8">8. Cloudnine Hospital (Marathahalli)</option>
+                                <option value="9">9. Columbia Asia (Sarjapur)</option>
+                                <option value="10">10. Sagar Hospital (Jayanagar)</option>
+                                <option value="11">11. Narayana Hrudayalaya (Bommasandra)</option>
+                                <option value="12">12. Manipal Hospital (Whitefield)</option>
+                                <option value="13">13. Koshys Hospital (Krishnarajapuram)</option>
+                                <option value="14">14. Sparsh Hospital (Yelahanka)</option>
+                                <option value="15">15. BGS Gleneagles Hospital (Kengeri)</option>
+                            </select>
+                        </div>
+
+                        <button id="find-btn" class="btn primary-btn">Find Hospital</button>
+                    </div>
+
+                    <div id="result-container" class="result-container" style="display: none;">
+                        <h3>Results</h3>
+                        <div id="result-content"></div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="hospital-name">
+                    <h2>Hospital Names</h2>
+                    <div class="form-group">
+                        <label for="hospital-number">Enter hospital number:</label>
+                        <input type="number" id="hospital-number" min="1" max="15" class="text-input">
+                    </div>
+                    <button id="get-name-btn" class="btn primary-btn">Get Hospital Name</button>
+                    <div id="hospital-name-result" class="result-container" style="display: none;"></div>
+                </div>
+
+                <div class="tab-content" id="hospital-list">
+                    <h2>Hospitals List</h2>
+                    <button id="show-list-btn" class="btn primary-btn">Show Hospitals List</button>
+                    <div id="hospitals-list-result" class="result-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div id="patient-form-container" class="card" style="display: none;">
+                <h2>Patient Details</h2>
+                <form id="patient-form">
+                    <div class="form-group">
+                        <label for="hospital-id">Hospital ID (4 digits):</label>
+                        <input type="number" id="hospital-id" min="1000" max="9999" required class="text-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-name">Name:</label>
+                        <input type="text" id="patient-name" required class="text-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-age">Age:</label>
+                        <input type="number" id="patient-age" min="1" max="120" required class="text-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="blood-group">Blood Group:</label>
+                        <select id="blood-group" required class="select-input">
+                            <option value="">-- Select Blood Group --</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vaccines">Have both vaccines been done?</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="vaccines" class="toggle-input">
+                            <label for="vaccines" class="toggle-label"></label>
+                            <span id="vaccines-status">No</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="treatment-area">Area of Treatment required:</label>
+                        <input type="text" id="treatment-area" required class="text-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="insurance">Insurance?</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="insurance" class="toggle-input">
+                            <label for="insurance" class="toggle-label"></label>
+                            <span id="insurance-status">No</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-number">Phone Number:</label>
+                        <input type="tel" id="phone-number" required class="text-input">
+                    </div>
+                    <button type="submit" class="btn primary-btn">Submit</button>
+                </form>
+            </div>
+
+            <div id="patient-records-container" class="card" style="display: none;">
+                <h2>Patient Records</h2>
+                <div id="patient-records"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Dynamic Ambulance Dispatch System</p>
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title">Title</h2>
+            <div id="modal-body">Content</div>
+            <div class="modal-footer">
+                <button id="modal-close-btn" class="btn secondary-btn">Close</button>
+                <button id="modal-action-btn" class="btn primary-btn">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="data.js"></script> -->
+    <script src="script.js"></script>
+</body>
+</html>
