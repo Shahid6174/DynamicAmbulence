@@ -9,7 +9,7 @@ struct Patient {
     char name[50];
     int age;
     char bloodGroup[10];
-    int hospitalID;
+    int patientID;
     char vaccinesDone;
     char areaOfTreatment[20];
     char insurance[5];
@@ -35,7 +35,7 @@ int main() {
         if (sscanf(line, "Name: %[^\n]", entries[entryCount].name) == 1) {
             sscanf(fgets(line, sizeof(line), file), "Age: %d", &entries[entryCount].age);
             sscanf(fgets(line, sizeof(line), file), "Blood Group: %[^\n]", entries[entryCount].bloodGroup);
-            sscanf(fgets(line, sizeof(line), file), "Hospital ID: %d", &entries[entryCount].hospitalID);
+            sscanf(fgets(line, sizeof(line), file), "Hospital ID: %d", &entries[entryCount].patientID);
             sscanf(fgets(line, sizeof(line), file), "Vaccines Done: %c", &entries[entryCount].vaccinesDone);
             sscanf(fgets(line, sizeof(line), file), "Area of Treatment: %[^\n]", entries[entryCount].areaOfTreatment);
             sscanf(fgets(line, sizeof(line), file), "Insurance: %[^\n]", entries[entryCount].insurance);
@@ -57,7 +57,7 @@ int main() {
         printf("Name: %s\n", entries[i].name);
         printf("Age: %d\n", entries[i].age);
         printf("Blood Group: %s\n", entries[i].bloodGroup);
-        printf("Hospital ID: %d\n", entries[i].hospitalID);
+        printf("Hospital ID: %d\n", entries[i].patientID);
         printf("Vaccines Done: %c\n", entries[i].vaccinesDone);
         printf("Area of Treatment: %s\n", entries[i].areaOfTreatment);
         printf("Insurance: %s\n", entries[i].insurance);

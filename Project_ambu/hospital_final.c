@@ -231,7 +231,7 @@ bool isPatientIdExist(int patientId)
     while (fgets(line, sizeof(line), patientFile) != NULL)
     {
         int existingPatientId;
-        if (sscanf(line, "Hospital ID: %d", &existingPatientId) == 1)
+        if (sscanf(line, "Patient ID: %d", &existingPatientId) == 1)
         {
             if (existingPatientId == patientId)
             {
@@ -264,9 +264,14 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
 
     printf("Enter unique 4-digit Patient ID: ");
     scanf("%d", &patientId);
-    if (patientId < 1000 || patientId > 9999 || isPatientIdExist(patientId)) {
-        printf("Invalid or duplicate Hospital ID.\n");
+    if (patientId < 1000 || patientId > 9999) {
+        printf("Invalid or duplicate Patient ID.\n");
         return false;
+    }
+
+    if (isPatientIdExist(patientId)) {
+        printf("Patient already exists. Proceeding with hospital assignment...\n");
+        return true;
     }
 
     printf("Name: ");
