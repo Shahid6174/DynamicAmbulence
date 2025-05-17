@@ -14,7 +14,7 @@ struct Patient {
     char vaccinesDone;
     char areaOfTreatment[20];
     char insurance[5];
-    long phoneNumber;
+    long long phoneNumber; // changed from long to long long
     char hospitalAssigned[50];
     float optimalCost;
 };
@@ -27,8 +27,8 @@ int isValidName(const char *name) {
     return 1;
 }
 
-int isValidPhoneNumber(long phone) {
-    return (phone >= 1000000000 && phone <= 9999999999);
+int isValidPhoneNumber(long long phone) {
+    return (phone >= 1000000000LL && phone <= 9999999999LL); // ensure 10-digit number
 }
 
 int isValidHospitalID(int id) {
@@ -36,7 +36,7 @@ int isValidHospitalID(int id) {
 }
 
 int main() {
-    FILE *file = fopen("your_data.txt", "r");
+    FILE *file = fopen("patient_details.txt", "r");
     if (file == NULL) {
         perror("Error opening file");
         return 1;
@@ -66,10 +66,10 @@ int main() {
             sscanf(fgets(line, sizeof(line), file), "Vaccines Done: %c", &entries[entryCount].vaccinesDone);
             sscanf(fgets(line, sizeof(line), file), "Area of Treatment: %[^\n]", entries[entryCount].areaOfTreatment);
             sscanf(fgets(line, sizeof(line), file), "Insurance: %[^\n]", entries[entryCount].insurance);
-            sscanf(fgets(line, sizeof(line), file), "Phone Number: %ld", &entries[entryCount].phoneNumber);
+            sscanf(fgets(line, sizeof(line), file), "Phone Number: %lld", &entries[entryCount].phoneNumber); // use %lld
 
             if (!isValidPhoneNumber(entries[entryCount].phoneNumber)) {
-                printf("Invalid phone number at entry %d: %ld\n", entryCount + 1, entries[entryCount].phoneNumber);
+                printf("Invalid phone number at entry %d: %lld\n", entryCount + 1, entries[entryCount].phoneNumber);
                 continue;
             }
 
@@ -90,7 +90,7 @@ int main() {
         printf("Vaccines Done: %c\n", entries[i].vaccinesDone);
         printf("Area of Treatment: %s\n", entries[i].areaOfTreatment);
         printf("Insurance: %s\n", entries[i].insurance);
-        printf("Phone Number: %ld\n", entries[i].phoneNumber);
+        printf("Phone Number: %lld\n", entries[i].phoneNumber); // use %lld for printing
         printf("Hospital Assigned: %s\n", entries[i].hospitalAssigned);
         printf("Optimal Cost: %.2f\n", entries[i].optimalCost);
         printf("-----------------\n");

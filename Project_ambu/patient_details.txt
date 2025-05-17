@@ -5,7 +5,7 @@ Hospital ID: 9798
 Vaccines Done: n
 Area of Treatment: Cardiovascular
 Insurance: no
-Phone Number: 798799880
+Phone Number: 7987998801
 Hospital Assigned: 8.Cloudnine_Hospital(marathahalli)
 Optimal Cost: 1500.00 INR
 -----------------
@@ -16,7 +16,7 @@ Hospital ID: 1234
 Vaccines Done: y
 Area of Treatment: Cardiovascular
 Insurance: yes
-Phone Number: 798779879
+Phone Number: 7987798793
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
 Optimal Cost: 1500.00 INR
 -----------------
@@ -27,7 +27,7 @@ Hospital ID: 1333
 Vaccines Done: y
 Area of Treatment: ENT
 Insurance: yes
-Phone Number: 798798799
+Phone Number: 7987987992
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
 Optimal Cost: 1500.00 INR
 -----------------
@@ -38,7 +38,7 @@ Hospital ID: 1334
 Vaccines Done: y
 Area of Treatment: Kidney
 Insurance: no
-Phone Number: 798799879
+Phone Number: 7987993879
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
 -----------------
@@ -49,7 +49,7 @@ Hospital ID: 1445
 Vaccines Done: y
 Area of Treatment: Eyes
 Insurance: no
-Phone Number: 798798792
+Phone Number: 9798798792
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 1500.00 INR
 -----------------
@@ -60,7 +60,7 @@ Hospital ID: 1332
 Vaccines Done: y
 Area of Treatment: Orthopaedic
 Insurance: yes
-Phone Number: 798798790
+Phone Number: 8798798790
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
 -----------------
@@ -71,7 +71,7 @@ Hospital ID: 1233
 Vaccines Done: y
 Area of Treatment: Orthopaedic
 Insurance: yes
-Phone Number: 798790022
+Phone Number: 8798790022
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 1500.00 INR
 -----------------
@@ -82,7 +82,7 @@ Hospital ID: 5555
 Vaccines Done: y
 Area of Treatment: hyhu
 Insurance: no
-Phone Number: 7867867
+Phone Number: 9976786774
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
 -----------------
