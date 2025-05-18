@@ -439,7 +439,7 @@ int main()
                 printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
                 printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
                 scanf("%d", &dest);
-                if(dest < 1 || dest >= 13){
+                if(dest < 1 || dest > 15){
                     printf("invalid destination hospital number.Please Enter between 0 and 14.\n");
                     continue;
                 }
