@@ -1,3 +1,5 @@
+# Just added severity for Shahid and Rahul for testing
+
 Name: Shahid
 Age: 16
 Blood Group: O-ve
@@ -7,7 +9,8 @@ Area of Treatment: Cardiovascular
 Insurance: no
 Phone Number: 7987998801
 Hospital Assigned: 8.Cloudnine_Hospital(marathahalli)
-Optimal Cost: 1500.00 INR
+Severity: Red
+Optimal Cost: 1500.00
 -----------------
 Name: Rahul
 Age: 19
@@ -18,7 +21,8 @@ Area of Treatment: Cardiovascular
 Insurance: yes
 Phone Number: 7987798793
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
-Optimal Cost: 1500.00 INR
+Severity: Green
+Optimal Cost: 1500.00
 -----------------
 Name: Raj
 Age: 19

@@ -14,8 +14,9 @@ struct Patient {
     char vaccinesDone;
     char areaOfTreatment[20];
     char insurance[5];
-    long long phoneNumber; // changed from long to long long
+    long long phoneNumber;
     char hospitalAssigned[50];
+    char severity[10]; //  Added severity field
     float optimalCost;
 };
 
@@ -33,6 +34,20 @@ int isValidPhoneNumber(long long phone) {
 
 int isValidPatientID(int id) {
     return (id > 0);
+}
+
+//  compare severity priority for sorting (Red < Yellow < Green)
+int getSeverityPriority(const char *severity) {
+    if (strcmp(severity, "Red") == 0) return 0;
+    if (strcmp(severity, "Yellow") == 0) return 1;
+    if (strcmp(severity, "Green") == 0) return 2;
+    return 3; // unknown
+}
+
+int compareSeverity(const void *a, const void *b) {
+    struct Patient *p1 = (struct Patient *)a;
+    struct Patient *p2 = (struct Patient *)b;
+    return getSeverityPriority(p1->severity) - getSeverityPriority(p2->severity);
 }
 
 int main() {
@@ -56,9 +71,8 @@ int main() {
 
             sscanf(fgets(line, sizeof(line), file), "Age: %d", &entries[entryCount].age);
             sscanf(fgets(line, sizeof(line), file), "Blood Group: %[^\n]", entries[entryCount].bloodGroup);
-          
             sscanf(fgets(line, sizeof(line), file), "Patient ID: %d", &entries[entryCount].patientID);
-          
+
             if (!isValidPatientID(entries[entryCount].patientID)) {
                 printf("Invalid patient ID at entry %d: %d\n", entryCount + 1, entries[entryCount].patientID);
                 continue;
@@ -67,7 +81,7 @@ int main() {
             sscanf(fgets(line, sizeof(line), file), "Vaccines Done: %c", &entries[entryCount].vaccinesDone);
             sscanf(fgets(line, sizeof(line), file), "Area of Treatment: %[^\n]", entries[entryCount].areaOfTreatment);
             sscanf(fgets(line, sizeof(line), file), "Insurance: %[^\n]", entries[entryCount].insurance);
-            sscanf(fgets(line, sizeof(line), file), "Phone Number: %lld", &entries[entryCount].phoneNumber); // use %lld
+            sscanf(fgets(line, sizeof(line), file), "Phone Number: %lld", &entries[entryCount].phoneNumber);
 
             if (!isValidPhoneNumber(entries[entryCount].phoneNumber)) {
                 printf("Invalid phone number at entry %d: %lld\n", entryCount + 1, entries[entryCount].phoneNumber);
@@ -75,6 +89,7 @@ int main() {
             }
 
             sscanf(fgets(line, sizeof(line), file), "Hospital Assigned: %[^\n]", entries[entryCount].hospitalAssigned);
+            sscanf(fgets(line, sizeof(line), file), "Severity: %[^\n]", entries[entryCount].severity);
             sscanf(fgets(line, sizeof(line), file), "Optimal Cost: %f", &entries[entryCount].optimalCost);
 
             entryCount++;
@@ -82,6 +97,9 @@ int main() {
     }
 
     fclose(file);
+
+    // Sort by severity if needed
+    qsort(entries, entryCount, sizeof(struct Patient), compareSeverity);
 
     for (int i = 0; i < entryCount; i++) {
         printf("Name: %s\n", entries[i].name);
@@ -91,10 +109,11 @@ int main() {
         printf("Vaccines Done: %c\n", entries[i].vaccinesDone);
         printf("Area of Treatment: %s\n", entries[i].areaOfTreatment);
         printf("Insurance: %s\n", entries[i].insurance);
-        printf("Phone Number: %lld\n", entries[i].phoneNumber); // use %lld for printing
+        printf("Phone Number: %lld\n", entries[i].phoneNumber);
         printf("Hospital Assigned: %s\n", entries[i].hospitalAssigned);
+        printf("Severity: %s\n", entries[i].severity); // Show severity
         printf("Optimal Cost: %.2f\n", entries[i].optimalCost);
-        printf("-----------------\n");
+        printf("-------------------------\n");
     }
 
     return 0;
