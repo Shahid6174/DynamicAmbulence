@@ -262,7 +262,6 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     long long phoneNumber;
     char vaccinesDone;
 
-<<<<<<< HEAD
     printf("Enter unique 4-digit Patient ID: ");
     scanf("%d", &patientId);
     if (patientId < 1000 || patientId > 9999) {
