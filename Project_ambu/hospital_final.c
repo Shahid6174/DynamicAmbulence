@@ -324,6 +324,11 @@ int main()
     char hospital_names[15][50];
     int moneyFactor = 500;
 
+    // Add hospital capacity array (example: all hospitals have capacity 3)
+    int hospital_capacity[15] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+    // Track current load (patients assigned) for each hospital
+    int hospital_load[15] = {0};
+
     // Read matrices from files
     readMatrixFromFile(matrix, "matrix.txt");
     readMatrixFromFile(casualtiesMatrix, "casualtiesMatrix.txt");
@@ -357,55 +362,58 @@ int main()
                 {
                     printf("\nFinding the nearest hospital possible...\n");
 
-                    // Traverse the adjacency list of the input hospital (src)
                     NODE cur = adjList[src - 1];
                     int minWeight = INT_MAX;
                     int nearestHospital = -1;
+                    int found = 0;
 
+                    // Try to find the nearest hospital with available capacity
                     while (cur != NULL)
                     {
-                        // Extract hospital number from the name
                         int currentHospitalNumber;
                         if (sscanf(cur->hospital_name, "%d", &currentHospitalNumber) == 1)
                         {
-                            // Check if the current edge weight is smaller than the minimum
-                            if (cur->weight < minWeight)
+                            int idx = currentHospitalNumber - 1;
+                            if (cur->weight < minWeight && hospital_load[idx] < hospital_capacity[idx])
                             {
                                 minWeight = cur->weight;
                                 nearestHospital = currentHospitalNumber;
+                                found = 1;
                             }
                             printf("\nCasualty Level at Hospital %d: %d - ", currentHospitalNumber, cur->casualtiesPresent);
                             printAdmissionDifficulty(cur->casualtiesPresent);
+                            printf("Capacity: %d, Occupied: %d\n", hospital_capacity[idx], hospital_load[idx]);
                         }
                         else
                         {
                             printf("\nError extracting hospital number from the name: %s\n", cur->hospital_name);
                         }
-
                         cur = cur->link;
                     }
 
-                    // Check if there is a self-loop with a smaller weight
-                    if (weights[src - 1][src - 1] < minWeight)
+                    // Check self-loop (if user wants to go to their own hospital)
+                    if (hospital_load[src-1] < hospital_capacity[src-1] && weights[src-1][src-1] < minWeight)
                     {
-                        minWeight = weights[src - 1][src - 1];
+                        minWeight = weights[src-1][src-1];
                         nearestHospital = src;
+                        found = 1;
                     }
 
                     int averageWeight = minWeight;
                     double optimalCost = averageWeight * moneyFactor;
 
-                    if (nearestHospital != -1)
+                    if (found && nearestHospital != -1)
                     {
-                        printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
+                        printf("\nNearest available hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                         printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
+                        hospital_load[nearestHospital-1]++;
                         handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor);
                         printf("Patient will be admitted to the hospital.\n\n");
                         exit(0);
                     }
                     else
                     {
-                        printf("\nNo adjacent hospitals found for Hospital %d\n", src);
+                        printf("\nAll nearby hospitals are at full capacity. Please try again later or choose another region.\n");
                     }
                 }
                 else
