@@ -378,6 +378,10 @@ int main()
         printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
         scanf("%d", &choice);
         printf("\n");
+        if (choice < 1 || choice > 4) {
+            printf("Invalid choice. Please select a valid option.\n");
+            continue; // go back to the start of the loop
+        }
 
         switch (choice)
         {
@@ -465,6 +469,10 @@ int main()
                 printf("6.Bannerghatta   7.Shanti Nagar    8.Marathahalli        9.Sarjapur       10.Jayanagar\n");
                 printf("11.Bommasandra   12.Whitefield     13.Krishnarajapuram   14.Yelahanka     15.Kengeri: \n");
                 scanf("%d", &src);
+                if(src < 1 || src > 15){
+                    printf("invalid nearest location hospital number.Please Enter between 1 and 15.\n");
+                    continue;
+                }
                 printf("\nSelect the hospital you want to go: \n");
                 printf("1.Suguna_Hospital(Rajajinagar)\t\t2.Aster_CMI_Hospital(Sahakarnagar)\t3.MS_Ramaiah_Hospital(Sanjaynagar)\n");
                 printf("4.People's_Tree_Hospital(Yeshwanthpur) \t5.Fortis_Hospital(Nagarbhavi)\t\t6.Appolo_Hospital(Bannerghatta)\n");
@@ -472,6 +480,11 @@ int main()
                 printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
                 printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
                 scanf("%d", &dest);
+                if(dest < 1 || dest > 15){
+                    printf("invalid destination hospital number.Please Enter between 0 and 14.\n");
+                    continue;
+                }
+
                 printf("\nFinding the optimal route: \n");
 
                 // Implement Dijkstra's algorithm to find the optimal route
@@ -570,6 +583,7 @@ int main()
                 printf("Enter valid input...\n");
             }
             break;
+            
         case 2:
             printf("Enter the hospital number to print its name: ");
             scanf("%d", &near_hosp);
