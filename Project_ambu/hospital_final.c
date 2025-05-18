@@ -305,243 +305,190 @@ void handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     }
 }
 
+void displayHospitalMenu() {
+    printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
+}
+
+void handleEmergencyCase(int hospitals, NODE *adjList, int weights[15][15], char hospital_names[15][50], int moneyFactor, int hospital_capacity[15], int hospital_load[15]) {
+    int src;
+    printf("\nSelect a number corresponding to your nearest location.\n");
+    printf("1.Rajaji nagar  2.Sahakar Nagar  3.Sanjaynagar  4.Yeshwanthpur  5.Nagarbavi\n");
+    printf("6.Bannerghatta  7.Shanti Nagar  8.Marathahalli  9.Sarjapur  10.Jayanagar\n");
+    printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
+    scanf("%d", &src);
+    if (src >= 1 && src <= hospitals) {
+        printf("\nFinding the nearest hospital possible...\n");
+        NODE cur = adjList[src - 1];
+        int minWeight = INT_MAX;
+        int nearestHospital = -1;
+        int found = 0;
+        while (cur != NULL) {
+            int currentHospitalNumber;
+            if (sscanf(cur->hospital_name, "%d", &currentHospitalNumber) == 1) {
+                int idx = currentHospitalNumber - 1;
+                if (cur->weight < minWeight && hospital_load[idx] < hospital_capacity[idx]) {
+                    minWeight = cur->weight;
+                    nearestHospital = currentHospitalNumber;
+                    found = 1;
+                }
+                printf("\nCasualty Level at Hospital %d: %d - ", currentHospitalNumber, cur->casualtiesPresent);
+                printAdmissionDifficulty(cur->casualtiesPresent);
+                printf("Capacity: %d, Occupied: %d\n", hospital_capacity[idx], hospital_load[idx]);
+            } else {
+                printf("\nError extracting hospital number from the name: %s\n", cur->hospital_name);
+            }
+            cur = cur->link;
+        }
+        if (hospital_load[src-1] < hospital_capacity[src-1] && weights[src-1][src-1] < minWeight) {
+            minWeight = weights[src-1][src-1];
+            nearestHospital = src;
+            found = 1;
+        }
+        int averageWeight = minWeight;
+        double optimalCost = averageWeight * moneyFactor;
+        if (found && nearestHospital != -1) {
+            printf("\nNearest available hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
+            printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
+            hospital_load[nearestHospital-1]++;
+            handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor);
+            printf("Patient will be admitted to the hospital.\n\n");
+            exit(0);
+        } else {
+            printf("\nAll nearby hospitals are at full capacity. Please try again later or choose another region.\n");
+        }
+    } else {
+        printf("\nInvalid input. Enter a valid hospital number.\n");
+    }
+}
+
+void handleNonEmergencyCase(int hospitals, NODE *adjList, int weights[15][15], char hospital_names[15][50], int moneyFactor) {
+    int src, dest;
+    printf("\nSelect the number corresponding to your nearest location: \n");
+    printf("1.Rajaji nagar   2.Sahakar Nagar   3.Sanjaynagar         4.Yeshwanthpur   5.Nagarbavi\n");
+    printf("6.Bannerghatta   7.Shanti Nagar    8.Marathahalli        9.Sarjapur       10.Jayanagar\n");
+    printf("11.Bommasandra   12.Whitefield     13.Krishnarajapuram   14.Yelahanka     15.Kengeri: \n");
+    scanf("%d", &src);
+    printf("\nSelect the hospital you want to go: \n");
+    printf("1.Suguna_Hospital(Rajajinagar)\t\t2.Aster_CMI_Hospital(Sahakarnagar)\t3.MS_Ramaiah_Hospital(Sanjaynagar)\n");
+    printf("4.People's_Tree_Hospital(Yeshwanthpur) \t5.Fortis_Hospital(Nagarbhavi)\t\t6.Appolo_Hospital(Bannerghatta)\n");
+    printf("7.HCG_Hospital(Shantinagar)\t\t8.Cloudnine_Hospital(Marathahalli)\t9.Columbia_Asia(Sarjapur)\n");
+    printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
+    printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
+    scanf("%d", &dest);
+    printf("\nFinding the optimal route: \n");
+    int distance[hospitals];
+    int previous[hospitals];
+    bool visited[hospitals];
+    for (int i = 0; i < hospitals; i++) {
+        distance[i] = INT_MAX;
+        previous[i] = -1;
+        visited[i] = false;
+    }
+    distance[src - 1] = 0;
+    for (int count = 0; count < hospitals - 1; count++) {
+        int u = -1;
+        int minDistance = INT_MAX;
+        for (int v = 0; v < hospitals; v++) {
+            if (!visited[v] && distance[v] < minDistance) {
+                u = v;
+                minDistance = distance[v];
+            }
+        }
+        visited[u] = true;
+        NODE cur = adjList[u];
+        while (cur != NULL) {
+            int v = atoi(cur->hospital_name) - 1;
+            if (!visited[v] && distance[u] + cur->weight < distance[v]) {
+                distance[v] = distance[u] + cur->weight;
+                previous[v] = u;
+            }
+            cur = cur->link;
+        }
+    }
+    printf("\nOptimal route from %s to %s: \n", hospital_names[src - 1], hospital_names[dest - 1]);
+    int current = dest - 1;
+    int edgeCount = 0;
+    int totalWeight = 0;
+    while (current != -1) {
+        printf("%s", hospital_names[current]);
+        int prev = previous[current];
+        if (prev != -1) {
+            totalWeight += weights[prev][current];
+            edgeCount++;
+            printf(" <- ");
+        }
+        current = prev;
+    }
+    printf("\n");
+    if (edgeCount > 0) {
+        double averageWeight = (double)totalWeight / edgeCount;
+        printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
+        double optimalCost = averageWeight * moneyFactor;
+        printf("Optimal Cost: %.2lf INR\n", optimalCost);
+        handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor);
+        printf("Patient will be admitted to the hospital.\n\n");
+        exit(0);
+    } else {
+        printf("No direct or adjacent edge found between the source and destination.\n");
+    }
+}
+
+void selectHospital(int hospitals, NODE *adjList, int weights[15][15], char hospital_names[15][50], int moneyFactor, int hospital_capacity[15], int hospital_load[15]) {
+    char input1;
+    printf("Is it a case of emergency?(y/n): \n");
+    scanf(" %c", &input1);
+    if (input1 == 'y') {
+        handleEmergencyCase(hospitals, adjList, weights, hospital_names, moneyFactor, hospital_capacity, hospital_load);
+    } else if (input1 == 'n') {
+        handleNonEmergencyCase(hospitals, adjList, weights, hospital_names, moneyFactor);
+    } else {
+        printf("Enter valid input...\n");
+    }
+}
+
 int main()
 {
     int hospitals = 15;
     int choice;
-    int near_hosp, src, dest;
-    char input1;
+    int near_hosp;
     time_t currentTime;
     struct tm *localTime;
     time(&currentTime);
     localTime = localtime(&currentTime);
     printf("\n\nDYNAMIC AMBULANCE DISPATCH SYSTEM\n\n");
     printf("Hospitals and Casualties data are obtained on %s\n", asctime(localTime));
-
     int matrix[15][15];
     int casualtiesMatrix[15][15];
     int weights[15][15];
     char hospital_names[15][50];
     int moneyFactor = 500;
-
-    // Add hospital capacity array (example: all hospitals have capacity 3)
     int hospital_capacity[15] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-    // Track current load (patients assigned) for each hospital
     int hospital_load[15] = {0};
-
-    // Read matrices from files
     readMatrixFromFile(matrix, "matrix.txt");
     readMatrixFromFile(casualtiesMatrix, "casualtiesMatrix.txt");
     readMatrixFromFile(weights, "weights.txt");
     readHospitalNamesFromFile(hospital_names, "hospital_names.txt");
-
     NODE *adjList = createAdjacencyList(hospitals, matrix, casualtiesMatrix, weights, hospital_names);
-
-    for (;;)
-    {
-        printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
+    for (;;) {
+        displayHospitalMenu();
         scanf("%d", &choice);
         printf("\n");
-
-        switch (choice)
-        {
-        case 1:
-            printf("Is it a case of emergency?(y/n): \n");
-            scanf(" %c", &input1);
-
-            if (input1 == 'y')
-            {
-                printf("\nSelect a number corresponding to your nearest location.\n");
-                printf("1.Rajaji nagar  2.Sahakar Nagar  3.Sanjaynagar  4.Yeshwanthpur  5.Nagarbavi\n");
-                printf("6.Bannerghatta  7.Shanti Nagar  8.Marathahalli  9.Sarjapur  10.Jayanagar\n");
-                printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
-                scanf("%d", &src);
-
-                // Check if the input hospital number is valid
-                if (src >= 1 && src <= hospitals)
-                {
-                    printf("\nFinding the nearest hospital possible...\n");
-
-                    NODE cur = adjList[src - 1];
-                    int minWeight = INT_MAX;
-                    int nearestHospital = -1;
-                    int found = 0;
-
-                    // Try to find the nearest hospital with available capacity
-                    while (cur != NULL)
-                    {
-                        int currentHospitalNumber;
-                        if (sscanf(cur->hospital_name, "%d", &currentHospitalNumber) == 1)
-                        {
-                            int idx = currentHospitalNumber - 1;
-                            if (cur->weight < minWeight && hospital_load[idx] < hospital_capacity[idx])
-                            {
-                                minWeight = cur->weight;
-                                nearestHospital = currentHospitalNumber;
-                                found = 1;
-                            }
-                            printf("\nCasualty Level at Hospital %d: %d - ", currentHospitalNumber, cur->casualtiesPresent);
-                            printAdmissionDifficulty(cur->casualtiesPresent);
-                            printf("Capacity: %d, Occupied: %d\n", hospital_capacity[idx], hospital_load[idx]);
-                        }
-                        else
-                        {
-                            printf("\nError extracting hospital number from the name: %s\n", cur->hospital_name);
-                        }
-                        cur = cur->link;
-                    }
-
-                    // Check self-loop (if user wants to go to their own hospital)
-                    if (hospital_load[src-1] < hospital_capacity[src-1] && weights[src-1][src-1] < minWeight)
-                    {
-                        minWeight = weights[src-1][src-1];
-                        nearestHospital = src;
-                        found = 1;
-                    }
-
-                    int averageWeight = minWeight;
-                    double optimalCost = averageWeight * moneyFactor;
-
-                    if (found && nearestHospital != -1)
-                    {
-                        printf("\nNearest available hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
-                        printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
-                        hospital_load[nearestHospital-1]++;
-                        handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor);
-                        printf("Patient will be admitted to the hospital.\n\n");
-                        exit(0);
-                    }
-                    else
-                    {
-                        printf("\nAll nearby hospitals are at full capacity. Please try again later or choose another region.\n");
-                    }
-                }
-                else
-                {
-                    printf("\nInvalid input. Enter a valid hospital number.\n");
-                }
-            }
-            else if (input1 == 'n')
-            {
-                printf("\nSelect the number corresponding to your nearest location: \n");
-                printf("1.Rajaji nagar   2.Sahakar Nagar   3.Sanjaynagar         4.Yeshwanthpur   5.Nagarbavi\n");
-                printf("6.Bannerghatta   7.Shanti Nagar    8.Marathahalli        9.Sarjapur       10.Jayanagar\n");
-                printf("11.Bommasandra   12.Whitefield     13.Krishnarajapuram   14.Yelahanka     15.Kengeri: \n");
-                scanf("%d", &src);
-                printf("\nSelect the hospital you want to go: \n");
-                printf("1.Suguna_Hospital(Rajajinagar)\t\t2.Aster_CMI_Hospital(Sahakarnagar)\t3.MS_Ramaiah_Hospital(Sanjaynagar)\n");
-                printf("4.People's_Tree_Hospital(Yeshwanthpur) \t5.Fortis_Hospital(Nagarbhavi)\t\t6.Appolo_Hospital(Bannerghatta)\n");
-                printf("7.HCG_Hospital(Shantinagar)\t\t8.Cloudnine_Hospital(Marathahalli)\t9.Columbia_Asia(Sarjapur)\n");
-                printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
-                printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
-                scanf("%d", &dest);
-                printf("\nFinding the optimal route: \n");
-
-                // Implement Dijkstra's algorithm to find the optimal route
-                int distance[hospitals];
-                int previous[hospitals];
-                bool visited[hospitals];
-
-                // Initialize distances and previous nodes
-                for (int i = 0; i < hospitals; i++)
-                {
-                    distance[i] = INT_MAX; //INFINITY
-                    previous[i] = -1;
-                    visited[i] = false;
-                }
-
-                // Set distance to source to 0
-                distance[src - 1] = 0;
-
-                // Find the optimal route
-                for (int count = 0; count < hospitals - 1; count++)
-                {
-                    int u = -1;
-                    int minDistance = INT_MAX;
-
-                    // Select the node with the minimum distance
-                    for (int v = 0; v < hospitals; v++)
-                    {
-                        if (!visited[v] && distance[v] < minDistance)
-                        {
-                            u = v;
-                            minDistance = distance[v];
-                        }
-                    }
-
-                    // Mark the selected node as visited
-                    visited[u] = true;
-
-                    // Update distances of the adjacent nodes
-                    NODE cur = adjList[u];
-                    while (cur != NULL)
-                    {
-                        int v = atoi(cur->hospital_name) - 1;
-                        if (!visited[v] && distance[u] + cur->weight < distance[v])
-                        {
-                            distance[v] = distance[u] + cur->weight;
-                            previous[v] = u;
-                        }
-                        cur = cur->link;
-                    }
-                }
-
-                // Display the optimal route and average edge weight
-                printf("\nOptimal route from %s to %s: \n", hospital_names[src - 1], hospital_names[dest - 1]);
-                int current = dest - 1;
-                int edgeCount = 0;
-                int totalWeight = 0;
-
-                while (current != -1)
-                {
-                    printf("%s", hospital_names[current]);
-                    int prev = previous[current];
-
-                    if (prev != -1)
-                    {
-                        // Update total weight and edge count
-                        totalWeight += weights[prev][current];
-                        edgeCount++;
-
-                        printf(" <- ");
-                    }
-                    current = prev;
-                }
-                printf("\n");
-
-                // Calculate and display the average edge weight
-                if (edgeCount > 0)
-                {
-                    double averageWeight = (double)totalWeight / edgeCount;
-                    printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
-                    double optimalCost = averageWeight * moneyFactor;
-                    printf("Optimal Cost: %.2lf INR\n", optimalCost);
-                    handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor);
-                    printf("Patient will be admitted to the hospital.\n\n");
-                    exit(0);
-                }
-                else
-                {
-                    printf("No direct or adjacent edge found between the source and destination.\n");
-                }
-            }
-            else
-            {
-                printf("Enter valid input...\n");
-            }
-            break;
-        case 2:
-            printf("Enter the hospital number to print its name: ");
-            scanf("%d", &near_hosp);
-            printHospitalName(near_hosp, hospital_names);
-            break;
-        case 3:
-            displayAdjacencyList(adjList, hospitals, hospital_names);
-            break;
-        case 4:
-            return 0;
-        default:
-            printf("Invalid choice. Please enter a valid option.\n");
+        switch (choice) {
+            case 1:
+                selectHospital(hospitals, adjList, weights, hospital_names, moneyFactor, hospital_capacity, hospital_load);
+                break;
+            case 2:
+                printf("Enter the hospital number to print its name: ");
+                scanf("%d", &near_hosp);
+                printHospitalName(near_hosp, hospital_names);
+                break;
+            case 3:
+                displayAdjacencyList(adjList, hospitals, hospital_names);
+                break;
+            case 4:
+                return 0;
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
         }
     }
 }
