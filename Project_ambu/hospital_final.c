@@ -258,7 +258,7 @@ bool isValidBloodGroup(const char *bg) {
 bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor)
 {
     char name[50], bloodGroup[5], insurance[5], areaOfTreatment[50];
-    int age, patientId;
+    int age, patientId, severity;
     long long phoneNumber;
     char vaccinesDone;
 
@@ -285,6 +285,14 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     scanf("%d", &age);
     if (age <= 0 || age > 120) {
         printf("Age must be between 1 and 120.\n");
+        return false;
+    }
+
+    // New: Input severity
+    printf("Enter severity level (1 = Minor, 2 = Moderate, 3 = Critical): ");
+    scanf("%d", &severity);
+    if (severity < 1 || severity > 3) {
+        printf("Invalid severity level. Must be 1, 2, or 3.\n");
         return false;
     }
 
@@ -331,6 +339,7 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
 
     fprintf(patientFile, "Name: %s\n", name);
     fprintf(patientFile, "Age: %d\n", age);
+    fprintf(patientFile, "Severity Level: %d\n", severity);  // <-- New line for severity
     fprintf(patientFile, "Blood Group: %s\n", bloodGroup);
     fprintf(patientFile, "Patient ID: %d\n", patientId);
     fprintf(patientFile, "Vaccines Done: %c\n", vaccinesDone);
@@ -397,6 +406,15 @@ int main()
                 printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
                 scanf("%d", &src);
 
+                // Ask for severity level
+            int severity;
+            printf("Enter the severity of the case (1 to 10, with 10 being most severe): ");
+            scanf("%d", &severity);
+            if (severity < 1 || severity > 10) {
+                printf("\nInvalid severity. Please enter a value between 1 and 10.\n");
+                continue;
+            }
+
                 // Check if the input hospital number is valid
                 if (src >= 1 && src <= hospitals)
                 {
@@ -438,7 +456,10 @@ int main()
                     }
 
                     int averageWeight = minWeight;
-                    double optimalCost = averageWeight * moneyFactor;
+
+                    //  Apply severity factor
+                    double severityFactor = 1.0 + (severity - 5) * 0.1;
+                    double optimalCost = averageWeight * moneyFactor * severityFactor;
 
                     if (nearestHospital != -1)
                     {

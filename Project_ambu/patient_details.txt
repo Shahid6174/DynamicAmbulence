@@ -90,3 +90,15 @@ Phone Number: 9976786774
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
 -----------------
+Name: Sabari
+Age: 18
+Severity Level: 3
+Blood Group: A+
+Patient ID: 2234
+Vaccines Done: y
+Area of Treatment: Cardiology
+Insurance: yes
+Phone Number: 8888888888
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
