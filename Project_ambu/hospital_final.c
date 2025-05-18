@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <string.h>
+#include <ctype.h>
 
 struct node
 {
@@ -49,27 +50,30 @@ NODE insert_rear(char hospital_name[], int casualties, int weight, NODE first)
 // Function to display the linked list
 void display(NODE first)
 {
-    NODE cur;
     if (first == NULL)
     {
-        printf("List is empty.\n");
+        printf("  No connected hospitals found.\n");
         return;
     }
-
-    cur = first;
+    NODE cur = first;
+    printf("  ");
     while (cur != NULL)
     {
-        printf("%s(Casualties:%d, Road_Weight:%d) -> ", cur->hospital_name, cur->casualtiesPresent, cur->weight);
+        printf("%s (Casualties: %d, Road Weight: %d)", cur->hospital_name, cur->casualtiesPresent, cur->weight);
+
+        if (cur->link != NULL)
+            printf(" -> ");
+        
         cur = cur->link;
     }
-
-    printf("NULL\n");
+    printf("\n");
 }
 
 // Function to create an adjacency list from matrices
 NODE *createAdjacencyList(int hospitals, int matrix[15][15], int casualtiesMatrix[15][15], int weights[15][15], char hospital_names[15][50])
 {
     NODE *adjList = (NODE *)malloc(hospitals * sizeof(NODE));
+
     if (adjList == NULL)
     {
         printf("Memory allocation error.\n");
@@ -94,12 +98,16 @@ NODE *createAdjacencyList(int hospitals, int matrix[15][15], int casualtiesMatri
 // Function to display the adjacency list
 void displayAdjacencyList(NODE *adjList, int hospitals, char hospital_names[15][50])
 {
+    printf("Displaying the adjacency lists for all hospitals:\n\n");
+
     for (int i = 0; i < hospitals; i++)
     {
-        printf("Adjacency list for Hospital %s => \n", hospital_names[i]);
-        display(adjList[i]);
-        printf("\n");
+        printf("Hospital: %s\n", hospital_names[i]);
+        printf("Connected Hospitals / Neighbors:\n");
+        display(adjList[i]);  // Assuming this prints the adjacency list of the ith hospital
+        printf("------------------------------\n\n");
     }
+    printf("End of adjacency lists.\n");
 }
 
 // Function to read a matrix from a file
@@ -210,8 +218,8 @@ void printAdmissionDifficulty(int casualties)
     }
 }
 
-// Function to check if a hospital ID already exists
-bool isHospitalIdExist(int hospitalId)
+// Function to check if a patient ID already exists
+bool isPatientIdExist(int patientId)
 {
     FILE *patientFile = fopen("patient_details.txt", "r");
     if (patientFile == NULL)
@@ -222,10 +230,10 @@ bool isHospitalIdExist(int hospitalId)
     char line[256];
     while (fgets(line, sizeof(line), patientFile) != NULL)
     {
-        int existingHospitalId;
-        if (sscanf(line, "Hospital ID: %d", &existingHospitalId) == 1)
+        int existingPatientId;
+        if (sscanf(line, "Patient ID: %d", &existingPatientId) == 1)
         {
-            if (existingHospitalId == hospitalId)
+            if (existingPatientId == patientId)
             {
                 fclose(patientFile);
                 return true; // ID is found
@@ -238,75 +246,104 @@ bool isHospitalIdExist(int hospitalId)
 }
 
 // Function to handle patient details
-void handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor)
+
+bool isValidBloodGroup(const char *bg) {
+    const char *valid[] = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
+    for (int i = 0; i < 8; i++) {
+        if (strcmp(bg, valid[i]) == 0) return true;
+    }
+    return false;
+}
+
+bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor)
 {
-    // Existing emergency or non-emergency case logic
-
-    // Additional logic for gathering patient details
-    char name[50], bloodGroup[5], insurance[5];
-    int age, hospitalId;
-    char areaOfTreatment[50];
+    char name[50], bloodGroup[5], insurance[5], areaOfTreatment[50];
+    int age, patientId;
     long long phoneNumber;
+    char vaccinesDone;
 
-    printf("Enter unique 4-digit Hospital ID: ");
-    scanf("%d", &hospitalId);
-    if (hospitalId < 1000 || hospitalId > 9999) {
-        printf("Invalid ID. Please enter a 4-digit number.\n");
-        return; // or loop back to re-enter
+    printf("Enter unique 4-digit Patient ID: ");
+    scanf("%d", &patientId);
+    if (patientId < 1000 || patientId > 9999) {
+        printf("Invalid or duplicate Patient ID.\n");
+        return false;
     }
 
-    if (isHospitalIdExist(hospitalId))
-    {
-        printf("\nPatient record with Hospital ID %d already exists. Not writing to the file.\n\n", hospitalId);
-        return;
+    if (isPatientIdExist(patientId)) {
+        printf("Patient already exists. Proceeding with hospital assignment...\n");
+        return true;
     }
 
-    printf("\nEnter patient details:\n");
     printf("Name: ");
     scanf("%s", name);
+    if (!isalpha(name[0])) {
+        printf("Invalid name. Must start with a letter.\n");
+        return false;
+    }
 
     printf("Age: ");
     scanf("%d", &age);
+    if (age <= 0 || age > 120) {
+        printf("Age must be between 1 and 120.\n");
+        return false;
+    }
 
-    printf("Blood Group: ");
+    printf("Blood Group (e.g., A+): ");
     scanf("%s", bloodGroup);
+    if (!isValidBloodGroup(bloodGroup)) {
+        printf("Invalid blood group.\n");
+        return false;
+    }
 
-    printf("Have both vaccines been done? (y/n): ");
-    char vaccinesDone;
+    printf("Have you received both doses of the COVID-19 vaccine? (y/n): ");
     scanf(" %c", &vaccinesDone);
+    if (vaccinesDone != 'y' && vaccinesDone != 'n') {
+        printf("Enter 'y' or 'n' only.\n");
+        return false;
+    }
 
     printf("Area of Treatment required: ");
     scanf("%s", areaOfTreatment);
+    if (strlen(areaOfTreatment) == 0) {
+        printf("Area of treatment cannot be empty.\n");
+        return false;
+    }
 
     printf("Insurance? (yes/no): ");
     scanf("%s", insurance);
+    if (strcmp(insurance, "yes") != 0 && strcmp(insurance, "no") != 0) {
+        printf("Please enter 'yes' or 'no'.\n");
+        return false;
+    }
 
     printf("Phone Number: ");
     scanf("%lld", &phoneNumber);
+    if (phoneNumber < 1000000000LL || phoneNumber > 9999999999LL) {
+        printf("Phone number must be 10 digits.\n");
+        return false;
+    }
 
-    // Write patient details to a file
     FILE *patientFile = fopen("patient_details.txt", "a");
-    if (patientFile == NULL)
-    {
-        printf("Error opening patient details file for writing.\n");
+    if (patientFile == NULL) {
+        printf("Error opening patient details file.\n");
+        return false;
     }
-    else
-    {
-        fprintf(patientFile, "Name: %s\n", name);
-        fprintf(patientFile, "Age: %d\n", age);
-        fprintf(patientFile, "Blood Group: %s\n", bloodGroup);
-        fprintf(patientFile, "Hospital ID: %d\n", hospitalId);
-        fprintf(patientFile, "Vaccines Done: %c\n", vaccinesDone);
-        fprintf(patientFile, "Area of Treatment: %s\n", areaOfTreatment);
-        fprintf(patientFile, "Insurance: %s\n", insurance);
-        fprintf(patientFile, "Phone Number: %lld\n", phoneNumber);
-        fprintf(patientFile, "Hospital Assigned: %s\n", hospital_names[nearestHospital - 1]);
-        fprintf(patientFile, "Optimal Cost: %.2lf INR\n", (double)averageWeight * moneyFactor);
-        fprintf(patientFile, "-----------------\n");
-        fclose(patientFile);
 
-        printf("\nPatient details successfully recorded.\n\n");
-    }
+    fprintf(patientFile, "Name: %s\n", name);
+    fprintf(patientFile, "Age: %d\n", age);
+    fprintf(patientFile, "Blood Group: %s\n", bloodGroup);
+    fprintf(patientFile, "Patient ID: %d\n", patientId);
+    fprintf(patientFile, "Vaccines Done: %c\n", vaccinesDone);
+    fprintf(patientFile, "Area of Treatment: %s\n", areaOfTreatment);
+    fprintf(patientFile, "Insurance: %s\n", insurance);
+    fprintf(patientFile, "Phone Number: %lld\n", phoneNumber);
+    fprintf(patientFile, "Hospital Assigned: %s\n", hospital_names[nearestHospital - 1]);
+    fprintf(patientFile, "Optimal Cost: %.2lf INR\n", (double)averageWeight * moneyFactor);
+    fprintf(patientFile, "-----------------\n");
+
+    fclose(patientFile);
+    printf("Patient details successfully recorded.\n\n");
+    return true;
 }
 
 int main()
@@ -407,9 +444,13 @@ int main()
                     {
                         printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                         printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
-                        handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor);
-                        printf("Patient will be admitted to the hospital.\n\n");
-                        exit(0);
+
+                        if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
+                            printf("Patient can be admitted to the hospital.\n\n");
+                        } else {
+                            printf("Patient can not be admitted due to invalid input.\n\n");
+                        }
+                        break;
                     }
                     else
                     {
@@ -525,9 +566,12 @@ int main()
                     printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
                     double optimalCost = averageWeight * moneyFactor;
                     printf("Optimal Cost: %.2lf INR\n", optimalCost);
-                    handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor);
-                    printf("Patient will be admitted to the hospital.\n\n");
-                    exit(0);
+                    if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor)) {
+                        printf("Patient can be admitted to the hospital.\n\n");
+                    } else {
+                        printf("Patient can not be admitted due to invalid input.\n\n");
+                    }
+                    break;
                 }
                 else
                 {

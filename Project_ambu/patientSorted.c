@@ -10,7 +10,7 @@ struct Patient {
     char name[50];
     int age;
     char bloodGroup[10];
-    int hospitalID;
+    int patientID;
     char vaccinesDone;
     char areaOfTreatment[20];
     char insurance[5];
@@ -31,7 +31,7 @@ int isValidPhoneNumber(long long phone) {
     return (phone >= 1000000000LL && phone <= 9999999999LL); // ensure 10-digit number
 }
 
-int isValidHospitalID(int id) {
+int isValidPatientID(int id) {
     return (id > 0);
 }
 
@@ -56,10 +56,11 @@ int main() {
 
             sscanf(fgets(line, sizeof(line), file), "Age: %d", &entries[entryCount].age);
             sscanf(fgets(line, sizeof(line), file), "Blood Group: %[^\n]", entries[entryCount].bloodGroup);
-            sscanf(fgets(line, sizeof(line), file), "Hospital ID: %d", &entries[entryCount].hospitalID);
-
-            if (!isValidHospitalID(entries[entryCount].hospitalID)) {
-                printf("Invalid hospital ID at entry %d: %d\n", entryCount + 1, entries[entryCount].hospitalID);
+          
+            sscanf(fgets(line, sizeof(line), file), "Patient ID: %d", &entries[entryCount].patientID);
+          
+            if (!isValidPatientID(entries[entryCount].patientID)) {
+                printf("Invalid patient ID at entry %d: %d\n", entryCount + 1, entries[entryCount].patientID);
                 continue;
             }
 
@@ -86,7 +87,7 @@ int main() {
         printf("Name: %s\n", entries[i].name);
         printf("Age: %d\n", entries[i].age);
         printf("Blood Group: %s\n", entries[i].bloodGroup);
-        printf("Hospital ID: %d\n", entries[i].hospitalID);
+        printf("Patient ID: %d\n", entries[i].patientID);
         printf("Vaccines Done: %c\n", entries[i].vaccinesDone);
         printf("Area of Treatment: %s\n", entries[i].areaOfTreatment);
         printf("Insurance: %s\n", entries[i].insurance);
