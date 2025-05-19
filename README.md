@@ -38,12 +38,14 @@ flowchart TD
 
 ```mermaid
 graph LR
-    H1["1. Suguna Hospital (Rajajinagar)"]
-    H2["2. Aster CMI Hospital (Sahakarnagar)"]
-    H3["3. MS Ramaiah Hospital (Sanjaynagar)"]
+    H1["1\. Suguna Hospital (Rajajinagar)"]
+    H2["2\. Aster CMI Hospital (Sahakarnagar)"]
+    H3["3\. MS Ramaiah Hospital (Sanjaynagar)"]
+
     H1 -- "2 km" --> H2
     H2 -- "1 km" --> H3
     H1 -- "5 km" --> H3
+
 
 ```
 
