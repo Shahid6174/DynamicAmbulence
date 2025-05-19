@@ -7,7 +7,8 @@ Area of Treatment: Cardiovascular
 Insurance: no
 Phone Number: 7987998801
 Hospital Assigned: 8.Cloudnine_Hospital(marathahalli)
-Optimal Cost: 1500.00 INR
+Severity: Red
+Optimal Cost: 1500.00
 -----------------
 Name: Rahul
 Age: 19
@@ -18,7 +19,8 @@ Area of Treatment: Cardiovascular
 Insurance: yes
 Phone Number: 7987798793
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
-Optimal Cost: 1500.00 INR
+Severity: Green
+Optimal Cost: 1500.00
 -----------------
 Name: Raj
 Age: 19
@@ -29,6 +31,7 @@ Area of Treatment: ENT
 Insurance: yes
 Phone Number: 7987987992
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
+Severity: N/A
 Optimal Cost: 1500.00 INR
 -----------------
 Name: Rai
@@ -40,6 +43,7 @@ Area of Treatment: Kidney
 Insurance: no
 Phone Number: 7987993879
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Severity: Yellow
 Optimal Cost: 3000.00 INR
 -----------------
 Name: Sai
@@ -51,6 +55,7 @@ Area of Treatment: Eyes
 Insurance: no
 Phone Number: 9798798792
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Severity: Green
 Optimal Cost: 1500.00 INR
 -----------------
 Name: Sid
@@ -62,6 +67,7 @@ Area of Treatment: Orthopaedic
 Insurance: yes
 Phone Number: 8798798790
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Severity: Yellow
 Optimal Cost: 3000.00 INR
 -----------------
 Name: Richard
@@ -73,6 +79,7 @@ Area of Treatment: Orthopaedic
 Insurance: yes
 Phone Number: 8798790022
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Severity: N/A
 Optimal Cost: 1500.00 INR
 -----------------
 Name: ggth
@@ -84,5 +91,80 @@ Area of Treatment: hyhu
 Insurance: no
 Phone Number: 9976786774
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
+Severity: N/A
 Optimal Cost: 3000.00 INR
+-----------------
+Name: Sabari
+Age: 18
+Severity Level: 3
+Blood Group: A+
+Patient ID: 2234
+Vaccines Done: y
+Area of Treatment: Cardiology
+Insurance: yes
+Phone Number: 8888888888
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Severity: Red
+Optimal Cost: 1500.00 INR
+-----------------
+
+Name: Sab
+Age: 18
+Severity Level: 7
+Blood Group: A+
+Patient ID: 3567
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sab
+Age: 19
+Severity Level: 7
+Blood Group: A+
+Patient ID: 9876
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 4.People's_Tree_Hospital(yeshwanthpur)
+Optimal Cost: 4000.00 INR
+-----------------
+Name: Rahul
+Age: 20
+Severity Level: 8
+Blood Group: A+
+Patient ID: 8989
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sabari
+Age: 20
+Severity Level: 9
+Blood Group: A+
+Patient ID: 8976
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sab
+Age: 54
+Severity Level: 9
+Blood Group: A+
+Patient ID: 7867
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 7676767676
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
 -----------------
