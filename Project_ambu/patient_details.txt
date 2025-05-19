@@ -107,3 +107,4 @@ Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
 Severity: Red
 Optimal Cost: 1500.00 INR
 -----------------
+
