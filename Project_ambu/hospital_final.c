@@ -255,10 +255,10 @@ bool isValidBloodGroup(const char *bg) {
     return false;
 }
 
-bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor)
+bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor, int severity)
 {
     char name[50], bloodGroup[5], insurance[5], areaOfTreatment[50];
-    int age, patientId, severity;
+    int age, patientId;
     long long phoneNumber;
     char vaccinesDone;
 
@@ -280,7 +280,7 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         printf("Invalid name. Must start with a letter.\n");
         return false;
     }
-
+    
     printf("Age: ");
     scanf("%d", &age);
     if (age <= 0 || age > 120) {
@@ -288,13 +288,6 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         return false;
     }
 
-    // New: Input severity
-    printf("Enter severity level (1 = Minor, 2 = Moderate, 3 = Critical): ");
-    scanf("%d", &severity);
-    if (severity < 1 || severity > 3) {
-        printf("Invalid severity level. Must be 1, 2, or 3.\n");
-        return false;
-    }
 
     printf("Blood Group (e.g., A+): ");
     scanf("%s", bloodGroup);
@@ -373,6 +366,9 @@ int main()
     int weights[15][15];
     char hospital_names[15][50];
     int moneyFactor = 500;
+    int severity = 0; // add severity 
+    double optimalCost = 0.0;
+
 
     // Read matrices from files
     readMatrixFromFile(matrix, "matrix.txt");
@@ -407,14 +403,9 @@ int main()
                 scanf("%d", &src);
 
                 // Ask for severity level
-            int severity;
-            printf("Enter the severity of the case (1 to 10, with 10 being most severe): ");
-            scanf("%d", &severity);
-            if (severity < 1 || severity > 10) {
-                printf("\nInvalid severity. Please enter a value between 1 and 10.\n");
-                continue;
-            }
-
+                printf("Enter severity level (1 to 10): ");
+                scanf("%d", &severity);
+                
                 // Check if the input hospital number is valid
                 if (src >= 1 && src <= hospitals)
                 {
@@ -457,16 +448,12 @@ int main()
 
                     int averageWeight = minWeight;
 
-                    //  Apply severity factor
-                    double severityFactor = 1.0 + (severity - 5) * 0.1;
-                    double optimalCost = averageWeight * moneyFactor * severityFactor;
-
                     if (nearestHospital != -1)
                     {
                         printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                         printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
 
-                        if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
+                        if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor, severity)) {
                             printf("Patient can be admitted to the hospital.\n\n");
                         } else {
                             printf("Patient can not be admitted due to invalid input.\n\n");
@@ -579,20 +566,35 @@ int main()
                     current = prev;
                 }
                 printf("\n");
+                 
 
                 // Calculate and display the average edge weight
                 if (edgeCount > 0)
                 {
-                    double averageWeight = (double)totalWeight / edgeCount;
-                    printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
-                    double optimalCost = averageWeight * moneyFactor;
-                    printf("Optimal Cost: %.2lf INR\n", optimalCost);
-                    if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor)) {
-                        printf("Patient can be admitted to the hospital.\n\n");
-                    } else {
-                        printf("Patient can not be admitted due to invalid input.\n\n");
-                    }
-                    break;
+                // Calculate average edge weight from edges
+                double averageWeight = (double)totalWeight / edgeCount;
+                printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
+
+                //  Calculate optimal cost based on severity
+                double optimalCost;
+                if (severity >= 7) {
+                   printf("Emergency case detected. Applying severity-based cost.\n");
+                   double severityFactor = 1.0 + (severity - 5) * 0.1;
+                   optimalCost = averageWeight * moneyFactor * severityFactor;
+                   printf("Severity Factor: %.2lf\n", severityFactor);
+                } else {
+                   optimalCost = averageWeight * moneyFactor;
+                 }
+
+                // Display the cost
+                   printf("Optimal Cost: %.2lf INR\n", optimalCost);
+
+                // Check patient admission
+               if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor, severity)) {
+                   printf("Patient can be admitted to the hospital.\n\n");
+    }          else {
+                   printf("Patient can not be admitted due to invalid input.\n\n");
+                  }
                 }
                 else
                 {

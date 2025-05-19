@@ -108,3 +108,63 @@ Severity: Red
 Optimal Cost: 1500.00 INR
 -----------------
 
+Name: Sab
+Age: 18
+Severity Level: 7
+Blood Group: A+
+Patient ID: 3567
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sab
+Age: 19
+Severity Level: 7
+Blood Group: A+
+Patient ID: 9876
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 4.People's_Tree_Hospital(yeshwanthpur)
+Optimal Cost: 4000.00 INR
+-----------------
+Name: Rahul
+Age: 20
+Severity Level: 8
+Blood Group: A+
+Patient ID: 8989
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sabari
+Age: 20
+Severity Level: 9
+Blood Group: A+
+Patient ID: 8976
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 8989898989
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: Sab
+Age: 54
+Severity Level: 9
+Blood Group: A+
+Patient ID: 7867
+Vaccines Done: y
+Area of Treatment: cardiology
+Insurance: yes
+Phone Number: 7676767676
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
