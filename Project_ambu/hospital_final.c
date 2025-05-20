@@ -111,7 +111,7 @@ void displayAdjacencyList(NODE *adjList, int hospitals, char hospital_names[15][
 }
 
 // Function to read a matrix from a file
-void readMatrixFromFile(int matrix[15][15], const char *filename)
+void readMatrixFromFile(int matrix[15][15], const char *filename,int hospitals)
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -120,9 +120,9 @@ void readMatrixFromFile(int matrix[15][15], const char *filename)
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < hospitals; i++)
     {
-        for (int j = 0; j < 15; j++)
+        for (int j = 0; j < hospitals; j++)
         {
             if (fscanf(file, "%d", &matrix[i][j]) != 1)
             {
@@ -366,9 +366,9 @@ int main()
     int moneyFactor = 500;
 
     // Read matrices from files
-    readMatrixFromFile(matrix, "matrix.txt");
-    readMatrixFromFile(casualtiesMatrix, "casualtiesMatrix.txt");
-    readMatrixFromFile(weights, "weights.txt");
+    readMatrixFromFile(matrix, "matrix.txt",hospitals);
+    readMatrixFromFile(casualtiesMatrix, "casualtiesMatrix.txt",hospitals);
+    readMatrixFromFile(weights, "weights.txt",hospitals);
     readHospitalNamesFromFile(hospital_names, "hospital_names.txt");
 
     NODE *adjList = createAdjacencyList(hospitals, matrix, casualtiesMatrix, weights, hospital_names);
