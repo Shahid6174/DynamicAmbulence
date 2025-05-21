@@ -86,3 +86,36 @@ Phone Number: 9976786774
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
 -----------------
+Name: yash
+Age: 18
+Blood Group: A+
+Patient ID: 1414
+Vaccines Done: y
+Area of Treatment: leg
+Insurance: no
+Phone Number: 7878787878
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: m
+Age: 111
+Blood Group: A+
+Patient ID: 1213
+Vaccines Done: n
+Area of Treatment: n
+Insurance: no
+Phone Number: 1234456478
+Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
+Optimal Cost: 1500.00 INR
+-----------------
+Name: dbd
+Age: 12
+Blood Group: A+
+Patient ID: 4545
+Vaccines Done: n
+Area of Treatment: bf
+Insurance: yes
+Phone Number: 1212121212
+Hospital Assigned: 5.Fortis_Hospital(nagarbhavi)
+Optimal Cost: 4000.00 INR
+-----------------
