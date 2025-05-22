@@ -6,6 +6,83 @@
 #include <string.h>
 #include <ctype.h>
 
+// Helper: check if file is CSV by extension
+bool is_csv_file(const char *filename) {
+    const char *dot = strrchr(filename, '.');
+    return dot && strcmp(dot, ".csv") == 0;
+}
+
+// Read matrix from .txt or .csv
+void readMatrixFromFile(int matrix[15][15], const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file %s for reading.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    char line[512];
+    for (int i = 0; i < 15; i++) {
+        if (!fgets(line, sizeof(line), file)) {
+            printf("Error reading matrix from file %s.\n", filename);
+            fclose(file);
+            exit(EXIT_FAILURE);
+        }
+        char *token;
+        int j = 0;
+        if (is_csv_file(filename))
+            token = strtok(line, ",\n");
+        else
+            token = strtok(line, " \n");
+        while (token && j < 15) {
+            matrix[i][j++] = atoi(token);
+            if (is_csv_file(filename))
+                token = strtok(NULL, ",\n");
+            else
+                token = strtok(NULL, " \n");
+        }
+        if (j != 15) {
+            printf("Matrix row %d in %s does not have 15 columns.\n", i+1, filename);
+            fclose(file);
+            exit(EXIT_FAILURE);
+        }
+    }
+    fclose(file);
+}
+
+// Read hospital names from .txt or .csv
+void readHospitalNamesFromFile(char hospital_names[15][50], const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file %s for reading.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    char line[256];
+    for (int i = 0; i < 15; i++) {
+        if (!fgets(line, sizeof(line), file)) {
+            printf("Error reading hospital names from file %s.\n", filename);
+            fclose(file);
+            exit(EXIT_FAILURE);
+        }
+        if (is_csv_file(filename)) {
+            char *token = strtok(line, ",\n");
+            if (token) strncpy(hospital_names[i], token, 49);
+            else hospital_names[i][0] = '\0';
+        } else {
+            line[strcspn(line, "\n")] = '\0';
+            strncpy(hospital_names[i], line, 49);
+        }
+        hospital_names[i][49] = '\0';
+    }
+    fclose(file);
+}
+
+// Prompt user for file path, use default if empty
+void prompt_filepath(const char *prompt, char *out, size_t outsize, const char *def) {
+    printf("%s [%s]: ", prompt, def);
+    fgets(out, outsize, stdin);
+    out[strcspn(out, "\n")] = '\0';
+    if (strlen(out) == 0) strncpy(out, def, outsize-1);
+}
+
 struct node
 {
     char hospital_name[50];
@@ -108,58 +185,6 @@ void displayAdjacencyList(NODE *adjList, int hospitals, char hospital_names[15][
         printf("------------------------------\n\n");
     }
     printf("End of adjacency lists.\n");
-}
-
-// Function to read a matrix from a file
-void readMatrixFromFile(int matrix[15][15], const char *filename)
-{
-    FILE *file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        printf("Error opening file %s for reading.\n", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < 15; i++)
-    {
-        for (int j = 0; j < 15; j++)
-        {
-            if (fscanf(file, "%d", &matrix[i][j]) != 1)
-            {
-                printf("Error reading matrix from file %s.\n", filename);
-                fclose(file);
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
-
-    fclose(file);
-}
-
-// Function to read hospital names from a file
-void readHospitalNamesFromFile(char hospital_names[15][50], const char *filename)
-{
-    FILE *file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        printf("Error opening file %s for reading.\n", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < 15; i++)
-    {
-        if (fgets(hospital_names[i], 50, file) == NULL)
-        {
-            printf("Error reading hospital names from file %s.\n", filename);
-            fclose(file);
-            exit(EXIT_FAILURE);
-        }
-
-        // Remove newline character if present
-        hospital_names[i][strcspn(hospital_names[i], "\n")] = '\0';
-    }
-
-    fclose(file);
 }
 
 // Function to print hospital names using hospital numbers
@@ -359,6 +384,19 @@ int main()
     printf("\n\nDYNAMIC AMBULANCE DISPATCH SYSTEM\n\n");
     printf("Hospitals and Casualties data are obtained on %s\n", asctime(localTime));
 
+    char matrix_file[128] = "matrix.txt";
+    char casualties_file[128] = "casualtiesMatrix.txt";
+    char weights_file[128] = "weights.txt";
+    char hospital_names_file[128] = "hospital_names.txt";
+
+    // Prompt for file paths
+    printf("\n--- Data File Configuration ---\n");
+    prompt_filepath("Enter adjacency matrix file (.txt/.csv)", matrix_file, sizeof(matrix_file), "matrix.txt");
+    prompt_filepath("Enter casualties matrix file (.txt/.csv)", casualties_file, sizeof(casualties_file), "casualtiesMatrix.txt");
+    prompt_filepath("Enter weights matrix file (.txt/.csv)", weights_file, sizeof(weights_file), "weights.txt");
+    prompt_filepath("Enter hospital names file (.txt/.csv)", hospital_names_file, sizeof(hospital_names_file), "hospital_names.txt");
+    printf("-------------------------------\n");
+
     int matrix[15][15];
     int casualtiesMatrix[15][15];
     int weights[15][15];
@@ -366,10 +404,10 @@ int main()
     int moneyFactor = 500;
 
     // Read matrices from files
-    readMatrixFromFile(matrix, "matrix.txt");
-    readMatrixFromFile(casualtiesMatrix, "casualtiesMatrix.txt");
-    readMatrixFromFile(weights, "weights.txt");
-    readHospitalNamesFromFile(hospital_names, "hospital_names.txt");
+    readMatrixFromFile(matrix, matrix_file);
+    readMatrixFromFile(casualtiesMatrix, casualties_file);
+    readMatrixFromFile(weights, weights_file);
+    readHospitalNamesFromFile(hospital_names, hospital_names_file);
 
     NODE *adjList = createAdjacencyList(hospitals, matrix, casualtiesMatrix, weights, hospital_names);
 
