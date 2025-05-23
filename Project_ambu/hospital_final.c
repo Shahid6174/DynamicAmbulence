@@ -262,65 +262,73 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     long long phoneNumber;
     char vaccinesDone;
 
-    printf("Enter unique 4-digit Patient ID: ");
-    scanf("%d", &patientId);
-    if (patientId < 1000 || patientId > 9999) {
-        printf("Invalid or duplicate Patient ID.\n");
-        return false;
+    // Patient ID
+    while (true) {
+        printf("Enter unique 4-digit Patient ID: ");
+        scanf("%d", &patientId);
+        if (patientId >= 1000 && patientId <= 9999 && !isPatientIdExist(patientId)) break;
+        if (patientId < 1000 || patientId > 9999) {
+            printf("Invalid Patient ID. Must be a 4-digit number.\n");
+        } else {
+            printf("Patient already exists. Proceeding with hospital assignment...\n");
+            return true;
+        }
     }
 
-    if (isPatientIdExist(patientId)) {
-        printf("Patient already exists. Proceeding with hospital assignment...\n");
-        return true;
-    }
-
-    printf("Name: ");
-    scanf("%s", name);
-    if (!isalpha(name[0])) {
+    // Name
+    while (true) {
+        printf("Name: ");
+        scanf("%s", name);
+        if (isalpha(name[0])) break;
         printf("Invalid name. Must start with a letter.\n");
-        return false;
     }
 
-    printf("Age: ");
-    scanf("%d", &age);
-    if (age <= 0 || age > 120) {
+    // Age
+    while (true) {
+        printf("Age: ");
+        scanf("%d", &age);
+        if (age > 0 && age <= 120) break;
         printf("Age must be between 1 and 120.\n");
-        return false;
     }
 
-    printf("Blood Group (e.g., A+): ");
-    scanf("%s", bloodGroup);
-    if (!isValidBloodGroup(bloodGroup)) {
+    // Blood Group
+    while (true) {
+        printf("Blood Group (e.g., A+): ");
+        scanf("%s", bloodGroup);
+        if (isValidBloodGroup(bloodGroup)) break;
         printf("Invalid blood group.\n");
-        return false;
     }
 
-    printf("Have you received both doses of the COVID-19 vaccine? (y/n): ");
-    scanf(" %c", &vaccinesDone);
-    if (vaccinesDone != 'y' && vaccinesDone != 'n') {
+    // Vaccination
+    while (true) {
+        printf("Have you received both doses of the COVID-19 vaccine? (y/n): ");
+        scanf(" %c", &vaccinesDone);
+        if (vaccinesDone == 'y' || vaccinesDone == 'n') break;
         printf("Enter 'y' or 'n' only.\n");
-        return false;
     }
 
-    printf("Area of Treatment required: ");
-    scanf("%s", areaOfTreatment);
-    if (strlen(areaOfTreatment) == 0) {
+    // Area of Treatment
+    while (true) {
+        printf("Area of Treatment required: ");
+        scanf("%s", areaOfTreatment);
+        if (strlen(areaOfTreatment) > 0) break;
         printf("Area of treatment cannot be empty.\n");
-        return false;
     }
 
-    printf("Insurance? (yes/no): ");
-    scanf("%s", insurance);
-    if (strcmp(insurance, "yes") != 0 && strcmp(insurance, "no") != 0) {
+    // Insurance
+    while (true) {
+        printf("Insurance? (yes/no): ");
+        scanf("%s", insurance);
+        if (strcmp(insurance, "yes") == 0 || strcmp(insurance, "no") == 0) break;
         printf("Please enter 'yes' or 'no'.\n");
-        return false;
     }
 
-    printf("Phone Number: ");
-    scanf("%lld", &phoneNumber);
-    if (phoneNumber < 1000000000LL || phoneNumber > 9999999999LL) {
+    // Phone Number
+    while (true) {
+        printf("Phone Number: ");
+        scanf("%lld", &phoneNumber);
+        if (phoneNumber >= 1000000000LL && phoneNumber <= 9999999999LL) break;
         printf("Phone number must be 10 digits.\n");
-        return false;
     }
 
     FILE *patientFile = fopen("patient_details.txt", "a");
@@ -375,114 +383,127 @@ int main()
 
     for (;;)
     {
-        printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
-        scanf("%d", &choice);
+        // Validate choice input
+        while (1) {
+            printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
+            if (scanf("%d", &choice) == 1 && choice >= 1 && choice <= 4) break;
+            printf("Invalid choice. Please select a valid option (1-4).\n");
+            while (getchar() != '\n'); // clear input buffer
+        }
+
         printf("\n");
+
         if (choice < 1 || choice > 4) {
             printf("Invalid choice. Please select a valid option.\n");
-            continue; // go back to the start of the loop
+            continue; // This is redundant because we validated, but keep it as is
         }
 
         switch (choice)
         {
         case 1:
-            printf("Is it a case of emergency?(y/n): \n");
-            scanf(" %c", &input1);
+            // Validate emergency input
+            while (1) {
+                printf("Is it a case of emergency?(y/n): \n");
+                scanf(" %c", &input1);
+                if (input1 == 'y' || input1 == 'n') break;
+                printf("Invalid input. Please enter 'y' or 'n'.\n");
+                while (getchar() != '\n');
+            }
 
             if (input1 == 'y')
             {
-                printf("\nSelect a number corresponding to your nearest location.\n");
-                printf("1.Rajaji nagar  2.Sahakar Nagar  3.Sanjaynagar  4.Yeshwanthpur  5.Nagarbavi\n");
-                printf("6.Bannerghatta  7.Shanti Nagar  8.Marathahalli  9.Sarjapur  10.Jayanagar\n");
-                printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
-                scanf("%d", &src);
+                // Validate source hospital input
+                while (1) {
+                    printf("\nSelect a number corresponding to your nearest location.\n");
+                    printf("1.Rajaji nagar  2.Sahakar Nagar  3.Sanjaynagar  4.Yeshwanthpur  5.Nagarbavi\n");
+                    printf("6.Bannerghatta  7.Shanti Nagar  8.Marathahalli  9.Sarjapur  10.Jayanagar\n");
+                    printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
+                    if (scanf("%d", &src) == 1 && src >= 1 && src <= hospitals) break;
+                    printf("Invalid nearest location hospital number. Please enter a number between 1 and 15.\n");
+                    while (getchar() != '\n');
+                }
 
-                // Check if the input hospital number is valid
-                if (src >= 1 && src <= hospitals)
+                printf("\nFinding the nearest hospital possible...\n");
+
+                // Traverse the adjacency list of the input hospital (src)
+                NODE cur = adjList[src - 1];
+                int minWeight = INT_MAX;
+                int nearestHospital = -1;
+
+                while (cur != NULL)
                 {
-                    printf("\nFinding the nearest hospital possible...\n");
-
-                    // Traverse the adjacency list of the input hospital (src)
-                    NODE cur = adjList[src - 1];
-                    int minWeight = INT_MAX;
-                    int nearestHospital = -1;
-
-                    while (cur != NULL)
+                    // Extract hospital number from the name
+                    int currentHospitalNumber;
+                    if (sscanf(cur->hospital_name, "%d", &currentHospitalNumber) == 1)
                     {
-                        // Extract hospital number from the name
-                        int currentHospitalNumber;
-                        if (sscanf(cur->hospital_name, "%d", &currentHospitalNumber) == 1)
+                        // Check if the current edge weight is smaller than the minimum
+                        if (cur->weight < minWeight)
                         {
-                            // Check if the current edge weight is smaller than the minimum
-                            if (cur->weight < minWeight)
-                            {
-                                minWeight = cur->weight;
-                                nearestHospital = currentHospitalNumber;
-                            }
-                            printf("\nCasualty Level at Hospital %d: %d - ", currentHospitalNumber, cur->casualtiesPresent);
-                            printAdmissionDifficulty(cur->casualtiesPresent);
+                            minWeight = cur->weight;
+                            nearestHospital = currentHospitalNumber;
                         }
-                        else
-                        {
-                            printf("\nError extracting hospital number from the name: %s\n", cur->hospital_name);
-                        }
-
-                        cur = cur->link;
-                    }
-
-                    // Check if there is a self-loop with a smaller weight
-                    if (weights[src - 1][src - 1] < minWeight)
-                    {
-                        minWeight = weights[src - 1][src - 1];
-                        nearestHospital = src;
-                    }
-
-                    int averageWeight = minWeight;
-                    double optimalCost = averageWeight * moneyFactor;
-
-                    if (nearestHospital != -1)
-                    {
-                        printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
-                        printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
-
-                        if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
-                            printf("Patient can be admitted to the hospital.\n\n");
-                        } else {
-                            printf("Patient can not be admitted due to invalid input.\n\n");
-                        }
-                        break;
+                        printf("\nCasualty Level at Hospital %d: %d - ", currentHospitalNumber, cur->casualtiesPresent);
+                        printAdmissionDifficulty(cur->casualtiesPresent);
                     }
                     else
                     {
-                        printf("\nNo adjacent hospitals found for Hospital %d\n", src);
+                        printf("\nError extracting hospital number from the name: %s\n", cur->hospital_name);
                     }
+
+                    cur = cur->link;
+                }
+
+                // Check if there is a self-loop with a smaller weight
+                if (weights[src - 1][src - 1] < minWeight)
+                {
+                    minWeight = weights[src - 1][src - 1];
+                    nearestHospital = src;
+                }
+
+                int averageWeight = minWeight;
+                double optimalCost = averageWeight * moneyFactor;
+
+                if (nearestHospital != -1)
+                {
+                    printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
+                    printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
+
+                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
+                        printf("Patient can be admitted to the hospital.\n\n");
+                    } else {
+                        printf("Patient can not be admitted due to invalid input.\n\n");
+                    }
+                    break;
                 }
                 else
                 {
-                    printf("\nInvalid input. Enter a valid hospital number.\n");
+                    printf("\nNo adjacent hospitals found for Hospital %d\n", src);
                 }
             }
             else if (input1 == 'n')
             {
-                printf("\nSelect the number corresponding to your nearest location: \n");
-                printf("1.Rajaji nagar   2.Sahakar Nagar   3.Sanjaynagar         4.Yeshwanthpur   5.Nagarbavi\n");
-                printf("6.Bannerghatta   7.Shanti Nagar    8.Marathahalli        9.Sarjapur       10.Jayanagar\n");
-                printf("11.Bommasandra   12.Whitefield     13.Krishnarajapuram   14.Yelahanka     15.Kengeri: \n");
-                scanf("%d", &src);
-                if(src < 1 || src > 15){
-                    printf("invalid nearest location hospital number.Please Enter between 1 and 15.\n");
-                    continue;
+                // Validate source hospital input
+                while (1) {
+                    printf("\nSelect the number corresponding to your nearest location: \n");
+                    printf("1.Rajaji nagar   2.Sahakar Nagar   3.Sanjaynagar         4.Yeshwanthpur   5.Nagarbavi\n");
+                    printf("6.Bannerghatta   7.Shanti Nagar    8.Marathahalli        9.Sarjapur       10.Jayanagar\n");
+                    printf("11.Bommasandra   12.Whitefield     13.Krishnarajapuram   14.Yelahanka     15.Kengeri: \n");
+                    if (scanf("%d", &src) == 1 && src >= 1 && src <= 15) break;
+                    printf("Invalid nearest location hospital number. Please enter a number between 1 and 15.\n");
+                    while (getchar() != '\n');
                 }
-                printf("\nSelect the hospital you want to go: \n");
-                printf("1.Suguna_Hospital(Rajajinagar)\t\t2.Aster_CMI_Hospital(Sahakarnagar)\t3.MS_Ramaiah_Hospital(Sanjaynagar)\n");
-                printf("4.People's_Tree_Hospital(Yeshwanthpur) \t5.Fortis_Hospital(Nagarbhavi)\t\t6.Appolo_Hospital(Bannerghatta)\n");
-                printf("7.HCG_Hospital(Shantinagar)\t\t8.Cloudnine_Hospital(Marathahalli)\t9.Columbia_Asia(Sarjapur)\n");
-                printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
-                printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
-                scanf("%d", &dest);
-                if(dest < 1 || dest > 15){
-                    printf("invalid destination hospital number.Please Enter between 0 and 14.\n");
-                    continue;
+
+                // Validate destination hospital input
+                while (1) {
+                    printf("\nSelect the hospital you want to go: \n");
+                    printf("1.Suguna_Hospital(Rajajinagar)\t\t2.Aster_CMI_Hospital(Sahakarnagar)\t3.MS_Ramaiah_Hospital(Sanjaynagar)\n");
+                    printf("4.People's_Tree_Hospital(Yeshwanthpur) \t5.Fortis_Hospital(Nagarbhavi)\t\t6.Appolo_Hospital(Bannerghatta)\n");
+                    printf("7.HCG_Hospital(Shantinagar)\t\t8.Cloudnine_Hospital(Marathahalli)\t9.Columbia_Asia(Sarjapur)\n");
+                    printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
+                    printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
+                    if (scanf("%d", &dest) == 1 && dest >= 1 && dest <= 15) break;
+                    printf("Invalid destination hospital number. Please enter a number between 1 and 15.\n");
+                    while (getchar() != '\n');
                 }
 
                 printf("\nFinding the optimal route: \n");
@@ -583,17 +604,25 @@ int main()
                 printf("Enter valid input...\n");
             }
             break;
-            
+
         case 2:
-            printf("Enter the hospital number to print its name: ");
-            scanf("%d", &near_hosp);
+            // Validate near_hosp input
+            while (1) {
+                printf("Enter the hospital number to print its name: ");
+                if (scanf("%d", &near_hosp) == 1 && near_hosp >= 1 && near_hosp <= hospitals) break;
+                printf("Invalid hospital number. Please enter a number between 1 and %d.\n", hospitals);
+                while (getchar() != '\n');
+            }
             printHospitalName(near_hosp, hospital_names);
             break;
+
         case 3:
             displayAdjacencyList(adjList, hospitals, hospital_names);
             break;
+
         case 4:
             return 0;
+
         default:
             printf("Invalid choice. Please enter a valid option.\n");
         }
