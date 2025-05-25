@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h> // For sleep/usleep
 
 // Helper: check if file is CSV by extension
 bool is_csv_file(const char *filename) {
@@ -379,6 +380,25 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     return true;
 }
 
+// Simulate ambulance movement with progress bar
+void simulateAmbulanceMovement(const char* srcName, const char* destName, int steps, int delayMs) {
+    printf("\nAmbulance is moving from %s to %s...\n", srcName, destName);
+    printf("[                                                  ] 0%%");
+    fflush(stdout);
+    for (int i = 1; i <= steps; ++i) {
+        usleep(delayMs * 1000); // delayMs milliseconds
+        int progress = (i * 50) / steps; // 50 chars wide
+        printf("\r[");
+        for (int j = 0; j < 50; ++j) {
+            if (j < progress) printf("#");
+            else printf(" ");
+        }
+        printf("] %d%%", (i * 100) / steps);
+        fflush(stdout);
+    }
+    printf("\nAmbulance has arrived at %s!\n\n", destName);
+}
+
 int main()
 {
     int hospitals = 15;
@@ -505,7 +525,8 @@ int main()
                 {
                     printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                     printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
-
+                    // Simulate ambulance movement
+                    simulateAmbulanceMovement(hospital_names[src-1], hospital_names[nearestHospital-1], 30, 80);
                     if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
                         printf("Patient can be admitted to the hospital.\n\n");
                     } else {
@@ -600,24 +621,24 @@ int main()
                 int current = dest - 1;
                 int edgeCount = 0;
                 int totalWeight = 0;
-
+                int route[20];
+                int routeLen = 0;
                 while (current != -1)
                 {
-                    printf("%s", hospital_names[current]);
+                    route[routeLen++] = current;
                     int prev = previous[current];
-
                     if (prev != -1)
                     {
-                        // Update total weight and edge count
                         totalWeight += weights[prev][current];
                         edgeCount++;
-
-                        printf(" <- ");
+                        printf("%s <- ", hospital_names[current]);
+                    }
+                    else {
+                        printf("%s", hospital_names[current]);
                     }
                     current = prev;
                 }
                 printf("\n");
-
                 // Calculate and display the average edge weight
                 if (edgeCount > 0)
                 {
@@ -625,6 +646,10 @@ int main()
                     printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
                     double optimalCost = averageWeight * moneyFactor;
                     printf("Optimal Cost: %.2lf INR\n", optimalCost);
+                    // Simulate ambulance movement along the route
+                    for (int i = routeLen-1; i > 0; --i) {
+                        simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i-1]], 15, 60);
+                    }
                     if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor)) {
                         printf("Patient can be admitted to the hospital.\n\n");
                     } else {
