@@ -399,6 +399,49 @@ void simulateAmbulanceMovement(const char* srcName, const char* destName, int st
     printf("\nAmbulance has arrived at %s!\n\n", destName);
 }
 
+// Structure for ambulance
+struct Ambulance {
+    int id;
+    int location; // 1-based hospital index
+    char status[16]; // e.g., "available", "busy"
+};
+#define MAX_AMBULANCES 20
+
+// Read ambulances from file
+int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char* filename) {
+    FILE* f = fopen(filename, "r");
+    if (!f) return 0;
+    char line[128];
+    int count = 0;
+    while (fgets(line, sizeof(line), f) && count < maxAmb) {
+        if (line[0] == '/' || line[0] == '\\' || line[0] == '\n') continue; // skip comments/empty
+        int id, loc;
+        char status[16];
+        if (sscanf(line, "%d,%d,%15s", &id, &loc, status) == 3) {
+            ambulances[count].id = id;
+            ambulances[count].location = loc;
+            strncpy(ambulances[count].status, status, 15);
+            ambulances[count].status[15] = '\0';
+            count++;
+        }
+    }
+    fclose(f);
+    return count;
+}
+// Find nearest available ambulance to a given hospital
+int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15]) {
+    int minDist = INT_MAX, ambIdx = -1;
+    for (int i = 0; i < ambCount; ++i) {
+        if (strcmp(ambulances[i].status, "available") != 0) continue;
+        int dist = weights[ambulances[i].location-1][src-1];
+        if (dist > 0 && dist < minDist) {
+            minDist = dist;
+            ambIdx = i;
+        }
+    }
+    return ambIdx;
+}
+
 int main()
 {
     int hospitals = 15;
@@ -523,6 +566,17 @@ int main()
 
                 if (nearestHospital != -1)
                 {
+                    // Read ambulances
+                    struct Ambulance ambulances[MAX_AMBULANCES];
+                    int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
+                    if (ambIdx == -1) {
+                        printf("No available ambulances nearby. Please wait or try again later.\n");
+                        break;
+                    }
+                    printf("\nDispatching Ambulance %d from %s\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location-1]);
+                    simulateAmbulanceMovement(hospital_names[ambulances[ambIdx].location-1], hospital_names[src-1], 20, 70);
+
                     printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                     printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
                     // Simulate ambulance movement

@@ -1,0 +1,6 @@
+// Format: AmbulanceID,CurrentHospitalIndex (1-based),Status
+1,1,available
+2,5,available
+3,8,available
+4,12,available
+// Add more ambulances as needed
