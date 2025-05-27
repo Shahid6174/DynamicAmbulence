@@ -126,3 +126,27 @@ This project is open-source and available under the MIT License.
 ## Contact
 
 For questions or suggestions, please open an issue or contact the maintainer.
+
+---
+
+## Sample Run
+
+```
+DYNAMIC AMBULANCE DISPATCH SYSTEM
+
+Hospitals and Casualties data are obtained on <date/time>
+
+--- Data File Configuration ---
+Enter adjacency matrix file (.txt/.csv) [matrix.txt]:
+Enter casualties matrix file (.txt/.csv) [casualtiesMatrix.txt]:
+Enter weights matrix file (.txt/.csv) [weights.txt]:
+Enter hospital names file (.txt/.csv) [hospital_names.txt]:
+-------------------------------
+
+Enter your choice:
+  1. Find Hospital
+  2. Print Hospital Name
+  3. Display Hospitals List
+  4. Exit
+Choice (1-4): 1
+Is it a case of emergency?(y/n):

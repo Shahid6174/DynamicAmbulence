@@ -203,23 +203,16 @@ void printHospitalName(int hospitalNumber, char hospital_names[15][50])
 // Function to find the shortest path using Floyd-Warshall algorithm
 void findShortestPath(int hospitals, int weights[15][15], int src, int dest, char hospital_names[15][50])
 {
-    // Implement Floyd-Warshall algorithm
+    int dist[15][15];
+    memcpy(dist, weights, sizeof(dist));
     for (int k = 0; k < hospitals; k++)
-    {
         for (int i = 0; i < hospitals; i++)
-        {
             for (int j = 0; j < hospitals; j++)
-            {
-                if (weights[i][k] + weights[k][j] < weights[i][j])
-                {
-                    weights[i][j] = weights[i][k] + weights[k][j];
-                }
-            }
-        }
-    }
+                if (dist[i][k] + dist[k][j] < dist[i][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
 
     // Print the shortest path
-    printf("Shortest path from %s to %s: %d\n", hospital_names[src], hospital_names[dest], weights[src][dest]);
+    printf("Shortest path from %s to %s: %d\n", hospital_names[src], hospital_names[dest], dist[src][dest]);
 }
 
 // Function to print admission difficulty based on casualties
@@ -423,7 +416,12 @@ int main()
     {
         // Validate choice input
         while (1) {
-            printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
+            printf("\nEnter your choice:\n");
+            printf("  1. Find Hospital\n");
+            printf("  2. Print Hospital Name\n");
+            printf("  3. Display Hospitals List\n");
+            printf("  4. Exit\n");
+            printf("Choice (1-4): ");
             if (scanf("%d", &choice) == 1 && choice >= 1 && choice <= 4) break;
             printf("Invalid choice. Please select a valid option (1-4).\n");
             while (getchar() != '\n'); // clear input buffer
@@ -458,7 +456,9 @@ int main()
                     printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
                     if (scanf("%d", &src) == 1 && src >= 1 && src <= hospitals) break;
                     printf("Invalid nearest location hospital number. Please enter a number between 1 and 15.\n");
-                    while (getchar() != '\n');
+                    // Clear input buffer
+                    int ch;
+                    while ((ch = getchar()) != '\n' && ch != EOF);
                 }
 
                 printf("\nFinding the nearest hospital possible...\n");
