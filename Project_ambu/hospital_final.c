@@ -442,6 +442,44 @@ int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, i
     return ambIdx;
 }
 
+// Update ambulance status and location in file
+void updateAmbulanceStatus(int ambId, int newLocation, const char* newStatus, const char* filename) {
+    struct Ambulance ambulances[MAX_AMBULANCES];
+    int count = readAmbulances(ambulances, MAX_AMBULANCES, filename);
+    FILE* f = fopen(filename, "w");
+    if (!f) return;
+    fprintf(f, "// Format: AmbulanceID,CurrentHospitalIndex (1-based),Status\n");
+    for (int i = 0; i < count; ++i) {
+        if (ambulances[i].id == ambId) {
+            ambulances[i].location = newLocation;
+            strncpy(ambulances[i].status, newStatus, 15);
+            ambulances[i].status[15] = '\0';
+        }
+        fprintf(f, "%d,%d,%s\n", ambulances[i].id, ambulances[i].location, ambulances[i].status);
+    }
+    fclose(f);
+}
+
+
+// Display all ambulances and their locations, status, and estimated time to src
+void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15]) {
+    printf("\nAmbulance Status List (all ambulances):\n");
+    int count = 0;
+    for (int i = 0; i < ambCount; ++i) {
+        int delay = weights[ambulances[i].location-1][src-1];
+        printf("  Ambulance %d at %s | Status: %s | ", ambulances[i].id, hospital_names[ambulances[i].location-1], ambulances[i].status);
+        if (ambulances[i].location == src) {
+            printf("Already at emergency location (0 seconds to reach)\n");
+        } else if (delay >= 0 && delay < 10000) {
+            printf("Estimated time to reach emergency: %d seconds\n", delay);
+        } else {
+            printf("Cannot reach emergency location directly\n");
+        }
+        count++;
+    }
+    printf("Total ambulances: %d\n", count);
+}
+
 int main()
 {
     int hospitals = 15;
@@ -524,6 +562,14 @@ int main()
                     while (getchar() != '\n');
                 }
 
+                // Show all ambulances and their time delays BEFORE any hospital/casualty logic
+                struct Ambulance ambulances[MAX_AMBULANCES];
+                int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+                printf("\n=== AMBULANCE LIST (before hospital selection) ===\n");
+                displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights);
+                printf("=== END OF AMBULANCE LIST ===\n\n");
+                fflush(stdout);
+
                 printf("\nFinding the nearest hospital possible...\n");
 
                 // Traverse the adjacency list of the input hospital (src)
@@ -566,26 +612,39 @@ int main()
 
                 if (nearestHospital != -1)
                 {
-                    // Read ambulances
-                    struct Ambulance ambulances[MAX_AMBULANCES];
-                    int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
-                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
-                    if (ambIdx == -1) {
-                        printf("No available ambulances nearby. Please wait or try again later.\n");
-                        break;
-                    }
-                    printf("\nDispatching Ambulance %d from %s\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location-1]);
-                    simulateAmbulanceMovement(hospital_names[ambulances[ambIdx].location-1], hospital_names[src-1], 20, 70);
+                    // Show ambulance list again BEFORE dispatch
+                    printf("\n=== AMBULANCE LIST (before dispatch) ===\n");
+                    displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights);
+                    printf("=== END OF AMBULANCE LIST ===\n\n");
+                    fflush(stdout);
 
                     printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                     printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
-                    // Simulate ambulance movement
-                    simulateAmbulanceMovement(hospital_names[src-1], hospital_names[nearestHospital-1], 30, 80);
+
+                    // Find and dispatch the nearest available ambulance
+                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
+                    if (ambIdx != -1) {
+                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location-1]);
+                        simulateAmbulanceMovement(hospital_names[src-1], hospital_names[nearestHospital-1], 30, 80);
+                        updateAmbulanceStatus(ambulances[ambIdx].id, nearestHospital, "busy", "ambulance_locations.txt");
+                    } else {
+                        printf("No available ambulance could be dispatched!\n");
+                    }
+                    fflush(stdout);
+
+                    // Show all ambulances and their time delays AFTER dispatch
+                    int ambCountAfter = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+                    printf("\n=== AMBULANCE LIST (after dispatch) ===\n");
+                    displayAllAmbulances(ambulances, ambCountAfter, hospital_names, src, weights);
+                    printf("=== END OF AMBULANCE LIST ===\n\n");
+                    fflush(stdout);
+
                     if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
                         printf("Patient can be admitted to the hospital.\n\n");
                     } else {
                         printf("Patient can not be admitted due to invalid input.\n\n");
                     }
+                    fflush(stdout);
                     break;
                 }
                 else
@@ -605,6 +664,14 @@ int main()
                     printf("Invalid nearest location hospital number. Please enter a number between 1 and 15.\n");
                     while (getchar() != '\n');
                 }
+
+                // Show all ambulances and their time delays BEFORE hospital selection
+                struct Ambulance ambulances[MAX_AMBULANCES];
+                int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+                printf("\n=== AMBULANCE LIST (before hospital selection) ===\n");
+                displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights);
+                printf("=== END OF AMBULANCE LIST ===\n\n");
+                fflush(stdout);
 
                 // Validate destination hospital input
                 while (1) {
@@ -700,10 +767,26 @@ int main()
                     printf("\nAverage Edge Weight: %.2lf\n", averageWeight);
                     double optimalCost = averageWeight * moneyFactor;
                     printf("Optimal Cost: %.2lf INR\n", optimalCost);
-                    // Simulate ambulance movement along the route
-                    for (int i = routeLen-1; i > 0; --i) {
-                        simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i-1]], 15, 60);
+
+                    // Find and dispatch the nearest available ambulance
+                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
+                    if (ambIdx != -1) {
+                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location-1]);
+                        for (int i = routeLen-1; i > 0; --i) {
+                            simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i-1]], 15, 60);
+                        }
+                        updateAmbulanceStatus(ambulances[ambIdx].id, dest, "busy", "ambulance_locations.txt");
+                    } else {
+                        printf("No available ambulance could be dispatched!\n");
                     }
+
+                    // Show all ambulances and their time delays AFTER dispatch
+                    int ambCountAfter = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+                    printf("\n=== AMBULANCE LIST (after dispatch) ===\n");
+                    displayAllAmbulances(ambulances, ambCountAfter, hospital_names, src, weights);
+                    printf("=== END OF AMBULANCE LIST ===\n\n");
+                    fflush(stdout);
+
                     if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor)) {
                         printf("Patient can be admitted to the hospital.\n\n");
                     } else {
