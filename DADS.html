@@ -1,0 +1,350 @@
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>
+    RapidResponse Emergency Details
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-sky-100 text-gray-900 mt-43">
+  <header class="bg-white flex items-center gap-2 px-4 py-3 max-w-5xl mx-auto">
+    <img alt="RapidResponse logo with purple and blue shapes" class="w-6 h-6" height="24"
+      src="https://storage.googleapis.com/a1aa/image/7703e670-6d4c-4a93-29a1-ca6fad162c31.jpg" width="24" />
+    <span class="font-extrabold text-lg select-none">
+      RapidResponse
+    </span>
+    <nav class="ml-6 flex gap-7 text-xs text-gray-500 font-semibold select-none duration-300 ease-in ...">
+      <a class="hover:text-indigo-600  border-indigo-600 pb-0.5 duration-100 ease-in-out ..." href="#">
+        Dashboard
+      </a>
+      <a class="hover:text-indigo-600  border-indigo-600 pb-0.5 duration-100 ease-in-out " href="#">
+        Emergency Details Entry
+      </a>
+      <a class="hover:text-indigo-600  border-indigo-600 pb-0.5 duration-100 ease-in-out " href="#">
+        Hospital
+      </a>
+      <a class="hover:text-indigo-600  border-indigo-600 pb-0.5 duration-100 ease-in-out " href="#">
+        Patient Admission
+      </a>
+      <a class="hover:text-indigo-600  border-indigo-600 pb-0.5 duration-100 ease-in-out " href="#">
+        Settings
+      </a>
+    </nav>
+  </header>
+  <main class="bg-white max-w-5xl mx-auto px-4 py-6">
+    <form class="space-y-6">
+      <!-- Emergency Details -->
+      <section>
+        <h2 class="font-bold text-gray-900 mb-2 text-sm select-none">
+          Emergency Details
+        </h2>
+        <input
+          class="w-full border border-gray-300 rounded px-3 py-2 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+          placeholder="Incident Type" type="text" />
+        <div class="mt-3 text-xs text-gray-700 select-none">
+          <label class="font-bold text-gray-900">
+            Casualty Severity
+          </label>
+          <div class="flex gap-6 mt-1 max-w-xs">
+            <span>
+              Minor
+            </span>
+            <span>
+              Moderate
+            </span>
+            <span>
+              Severe
+            </span>
+            <span>
+              Critical
+            </span>
+          </div>
+        </div>
+        <input
+          class="w-full border border-gray-200 rounded px-3 py-2 mt-3 text-xs placeholder:text-gray-300 bg-gray-100 cursor-not-allowed"
+          disabled="" placeholder="Injury/Illness Details" type="text" />
+        <input
+          class="w-full border border-gray-200 rounded px-3 py-2 mt-2 text-xs placeholder:text-gray-300 bg-gray-100 cursor-not-allowed"
+          disabled="" placeholder="Additional Notes" type="text" />
+      </section>
+      <!-- Hospital Selection (first) -->
+      <section>
+        <h2 class="font-bold text-gray-900 mb-2 text-sm select-none">
+          Hospital Selection
+        </h2>
+        <input
+          class="w-full border border-gray-300 rounded px-3 py-2 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+          placeholder="Search for hospital" type="text" />
+      </section>
+      <!-- Hospital Selection (second) -->
+      <section>
+        <h2 class="font-bold text-gray-900 mb-2 mt-6 text-sm select-none">
+          Hospital Selection
+        </h2>
+        <input
+          class="w-full border border-gray-300 rounded px-3 py-2 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+          placeholder="Search for hospital" type="text" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          <!-- Hospital Card 1 -->
+          <div class="border border-gray-200 rounded p-2 flex flex-col gap-2 max-w-[220px]">
+            <div>
+              <h3 class="font-semibold text-xs text-gray-900 select-none">
+                City Health Hub
+              </h3>
+              <p class="text-gray-400 text-[9px] select-none">
+                Emergency care available
+              </p>
+              <p class="text-gray-400 text-[9px] select-none">
+                Open 24/7
+              </p>
+            </div>
+            <img alt="Night view of a medical clinic building with illuminated orange MEDICAL CLINIC sign"
+              class="w-[100px] h-[100px] object-cover rounded" height="100"
+              src="https://storage.googleapis.com/a1aa/image/91cd43f0-10ec-4d95-fd9d-14dddc08b4f6.jpg" width="100" />
+            <button class="hover:bg-indigo-400 hover:text-white text-indigo-600 text-xs border border-indigo-300 rounded px-2 py-0.5 w-max select-none"
+              type="button">
+              Select
+            </button>
+          </div>
+          <!-- Hospital Card 2 -->
+          <div class="border border-gray-200 rounded p-2 flex flex-col gap-2 max-w-[220px]">
+            <div>
+              <h3 class="font-semibold text-xs text-gray-900 select-none">
+                Green Valley Clinic
+              </h3>
+              <p class="text-gray-400 text-[9px] select-none">
+                Specialized maternity care
+              </p>
+              <p class="text-gray-400 text-[9px] select-none">
+                Open till 10 PM
+              </p>
+            </div>
+            <img alt="Exterior of a modern clinic building with glass windows and palm trees"
+              class="w-[100px] h-[100px] object-cover rounded" height="100"
+              src="https://storage.googleapis.com/a1aa/image/7894ba2e-ddd4-499c-76ae-9daecb3eb414.jpg" width="100" />
+            <button class="hover:bg-indigo-400 hover:text-white text-indigo-600 text-xs border border-indigo-300 rounded px-2 py-0.5 w-max select-none"
+              type="button">
+              Select
+            </button>
+          </div>
+          <!-- Hospital Card 3 -->
+          <div class="border border-gray-200 rounded p-2 flex flex-col gap-2 max-w-[220px]">
+            <div>
+              <h3 class="font-semibold text-xs text-gray-900 select-none">
+                Urban Med Center
+              </h3>
+              <p class="text-gray-400 text-[9px] select-none">
+                Trauma and surgery unit
+              </p>
+              <p class="text-gray-400 text-[9px] select-none">
+                Open 24/7
+              </p>
+            </div>
+            <img alt="Interior hallway of a medical center with brick walls and skylight"
+              class="w-[100px] h-[100px] object-cover rounded" height="100"
+              src="https://storage.googleapis.com/a1aa/image/cdc58a9a-bcec-48ad-28b7-fb3aa19f472f.jpg" width="100" />
+            <button class="hover:bg-indigo-400 hover:text-white text-indigo-600 text-xs border border-indigo-300 rounded px-2 py-0.5 w-max select-none"
+              type="button">
+              Select
+            </button>
+          </div>
+          <!-- Hospital Card 4 -->
+          <div class="border border-gray-200 rounded p-2 flex flex-col gap-2 max-w-[220px]">
+            <div>
+              <h3 class="font-semibold text-xs text-gray-900 select-none">
+                Lakeside Hospital
+              </h3>
+              <p class="text-gray-400 text-[9px] select-none">
+                Cardiology and pediatrics
+              </p>
+              <p class="text-gray-400 text-[9px] select-none">
+                Open till 6 PM
+              </p>
+            </div>
+            <img alt="Exterior courtyard view of a hospital building with glass and brick"
+              class="w-[100px] h-[100px] object-cover rounded" height="100"
+              src="https://storage.googleapis.com/a1aa/image/af5200d6-45bc-43c7-a70d-b34a9f22794b.jpg" width="100" />
+            <button class="hover:bg-indigo-400 hover:text-white text-indigo-600 text-xs border border-indigo-300 rounded px-2 py-0.5 w-max select-none"
+              type="button">
+              Select
+            </button>
+          </div>
+          <!-- Hospital Card 5 -->
+          <div class="border border-gray-200 rounded p-2 flex flex-col gap-2 max-w-[220px]">
+            <div>
+              <h3 class="font-semibold text-xs text-gray-900 select-none">
+                MapleCare Clinic
+              </h3>
+              <p class="text-gray-400 text-[9px] select-none">
+                Orthopedic specialists
+              </p>
+              <p class="text-gray-400 text-[9px] select-none">
+                Open till 11 PM
+              </p>
+            </div>
+            <img alt="Interior room of a clinic with glass walls and plants"
+              class="w-[100px] h-[100px] object-cover rounded" height="100"
+              src="https://storage.googleapis.com/a1aa/image/04ef58d5-e6b6-4db5-fb6c-99d9718cd853.jpg" width="100" />
+            <button class="hover:bg-indigo-400 hover:text-white text-indigo-600 text-xs border border-indigo-300 rounded px-2 py-0.5 w-max select-none"
+              type="button">
+              Select
+            </button>
+          </div>
+          <!-- Hospital Card 6 -->
+          <div class="border border-gray-200 rounded p-2 flex flex-col gap-2 max-w-[220px]">
+            <div>
+              <h3 class="font-semibold text-xs text-gray-900 select-none">
+                Summit Health
+              </h3>
+              <p class="text-gray-400 text-[9px] select-none">
+                Advanced diagnostics
+              </p>
+              <p class="text-gray-400 text-[9px] select-none">
+                Open 24/7
+              </p>
+            </div>
+            <img alt="Interior hallway of a modern health facility with skylights and shiny floors"
+              class="w-[100px] h-[100px] object-cover rounded" height="100"
+              src="https://storage.googleapis.com/a1aa/image/90ddd307-0518-40f5-c593-6877d24b5d20.jpg" width="100" />
+            <button class="hover:bg-indigo-400 hover:text-white text-indigo-600 text-xs border border-indigo-300 rounded px-2 py-0.5 w-max select-none"
+              type="button">
+              Select
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Patient Admission -->
+
+      <section>
+        <h2 class="font-bold text-gray-900 mb-2 mt-6 text-sm select-none">
+          Patient Admission
+        </h2>
+        <input
+          class="w-full border border-gray-300 rounded px-3 py-2 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+          placeholder="Patient Name" type="text" />
+        <div class="flex gap-2 mt-2">
+          <input
+            class="w-1/3 border border-gray-300 rounded px-3 py-2 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+            placeholder="Relationship" type="text" />
+          <input
+            class="w-2/3 border border-gray-300 rounded px-3 py-2 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+            placeholder="Your illness details" type="text" />
+        </div>
+        <div class="flex items-center gap-2 mt-3 text-xs text-gray-700 select-none">
+          <input class="w-3 h-3 text-indigo-600 border border-gray-300 rounded focus:ring-indigo-500"
+            id="admission-nearest" type="checkbox" />
+          <label class="cursor-pointer" for="admission-nearest">
+            Admission to the nearest hospital
+          </label>
+          <input
+            class="border border-gray-300 rounded px-2 py-1 text-xs placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+            placeholder="Add notes" type="text" />
+        </div>
+        <div class="flex items-center gap-2 mt-1 text-xs text-gray-700 select-none">
+          <input class="w-3 h-3 text-indigo-600 border border-gray-300 rounded focus:ring-indigo-500"
+            id="preference-listed" type="checkbox" />
+          <label class="cursor-pointer" for="preference-listed">
+            Preference on listed hospitals
+          </label>
+        </div>
+        <button
+          class="mt-4 w-full bg-indigo-600 text-white text-xs font-semibold rounded py-2 select-none hover:bg-indigo-700 transition"
+          type="submit">
+          SUBMIT
+        </button>
+      </section>
+    </form>
+  </main>
+  <footer class="bg-gray-900 text-gray-300 pt-10 pb-6 mt-12 select-none">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex flex-col items-center gap-4">
+        <h3 class="text-white font-semibold text-sm">
+          Subscribe to our newsletter
+        </h3>
+        <form class="flex items-center rounded-full border border-gray-700 overflow-hidden max-w-xs w-full"
+          onsubmit="event.preventDefault()">
+          <input
+            class="bg-transparent text-gray-300 placeholder:text-gray-500 px-4 py-1 text-xs focus:outline-none flex-grow"
+            placeholder="Input your email" required="" type="email" />
+          <button
+            class="bg-indigo-600 text-white text-xs font-semibold px-4 py-1 rounded-r-full hover:bg-indigo-700 transition"
+            type="submit">
+            Subscribe
+          </button>
+        </form>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-10 gap-6">
+        <div class="flex items-center gap-2">
+          <img alt="RapidResponse logo with purple and blue shapes" class="w-6 h-6" height="24"
+            src="https://storage.googleapis.com/a1aa/image/7703e670-6d4c-4a93-29a1-ca6fad162c31.jpg" width="24" />
+          <span class="font-extrabold text-white text-lg select-none">
+            RapidResponse
+          </span>
+        </div>
+        <nav class="flex flex-wrap gap-4 text-xs text-gray-400 font-semibold justify-center sm:justify-start">
+          <a class="hover:text-white" href="#">
+            Pricing
+          </a>
+          <a class="hover:text-white" href="#">
+            About us
+          </a>
+          <a class="hover:text-white" href="#">
+            Features
+          </a>
+          <a class="hover:text-white" href="#">
+            Help Center
+          </a>
+          <a class="hover:text-white" href="#">
+            Contact us
+          </a>
+          <a class="hover:text-white" href="#">
+            FAQs
+          </a>
+        </nav>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 gap-4 text-gray-500 text-[10px]">
+        <select aria-label="Select language"
+          class="bg-gray-900 border border-gray-700 rounded text-gray-400 text-xs px-2 py-1 w-24">
+          <option>
+            English
+          </option>
+        </select>
+        <p class="text-center sm:text-left">
+          © 2024 Brand, Inc. • Privacy • Terms • Sitemap
+        </p>
+        <div class="flex gap-3 justify-center sm:justify-start text-gray-500">
+          <a aria-label="Twitter" class="hover:text-white" href="#">
+            <i class="fab fa-twitter fa-lg">
+            </i>
+          </a>
+          <a aria-label="Facebook" class="hover:text-white" href="#">
+            <i class="fab fa-facebook-f fa-lg">
+            </i>
+          </a>
+          <a aria-label="LinkedIn" class="hover:text-white" href="#">
+            <i class="fab fa-linkedin-in fa-lg">
+            </i>
+          </a>
+          <a aria-label="YouTube" class="hover:text-white" href="#">
+            <i class="fab fa-youtube fa-lg">
+            </i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>
