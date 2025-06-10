@@ -49,6 +49,19 @@ graph LR
 
 ```
 
+### Api Network Diagram
+
+```mermaid
+flowchart TD
+    A[User (Browser)]
+      -->|Interacts| B[Next.js Frontend<br/>(Bootstrap UI)]
+    B -->|API Requests (REST/HTTP)| C[C Backend API<br/>(Dynamic Ambulance Dispatch System)]
+    C -->|Data| B
+    B -->|UI Updates| A
+
+
+```
+
 ---
 
 ## Features
@@ -67,7 +80,7 @@ graph LR
 - `Project_ambu/weights.txt` — Distance matrix between hospitals
 - `Project_ambu/patient_details.txt` — Simulated patient data
 - `Project_ambu/casualtiesMatrix.txt` — Matrix of casualties (if applicable)
-
+- `frontend` -- basic next app based front end to be user friendly
 ---
 
 ## Usage Instructions
@@ -89,6 +102,13 @@ gcc Project_ambu/hospital_final.c -o Project_ambu/hospital_final.exe
 ```bash
 gcc Project_ambu/test_hospital.c -o Project_ambu/test_hospital
 ./Project_ambu/test_hospital
+```
+### 4. Run frontend
+
+```bash
+cd frontend
+npm install 
+npm run dev
 ```
 
 ---
