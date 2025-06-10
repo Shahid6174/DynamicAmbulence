@@ -6,23 +6,30 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h> // For sleep/usleep
+#include <sys/stat.h>
+#include <errno.h>
 
 // Helper: check if file is CSV by extension
-bool is_csv_file(const char *filename) {
+bool is_csv_file(const char *filename)
+{
     const char *dot = strrchr(filename, '.');
     return dot && strcmp(dot, ".csv") == 0;
 }
 
 // Read matrix from .txt or .csv
-void readMatrixFromFile(int matrix[15][15], const char *filename) {
+void readMatrixFromFile(int matrix[15][15], const char *filename)
+{
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("Error opening file %s for reading.\n", filename);
         exit(EXIT_FAILURE);
     }
     char line[512];
-    for (int i = 0; i < 15; i++) {
-        if (!fgets(line, sizeof(line), file)) {
+    for (int i = 0; i < 15; i++)
+    {
+        if (!fgets(line, sizeof(line), file))
+        {
             printf("Error reading matrix from file %s.\n", filename);
             fclose(file);
             exit(EXIT_FAILURE);
@@ -33,15 +40,17 @@ void readMatrixFromFile(int matrix[15][15], const char *filename) {
             token = strtok(line, ",\n");
         else
             token = strtok(line, " \n");
-        while (token && j < 15) {
+        while (token && j < 15)
+        {
             matrix[i][j++] = atoi(token);
             if (is_csv_file(filename))
                 token = strtok(NULL, ",\n");
             else
                 token = strtok(NULL, " \n");
         }
-        if (j != 15) {
-            printf("Matrix row %d in %s does not have 15 columns.\n", i+1, filename);
+        if (j != 15)
+        {
+            printf("Matrix row %d in %s does not have 15 columns.\n", i + 1, filename);
             fclose(file);
             exit(EXIT_FAILURE);
         }
@@ -50,24 +59,33 @@ void readMatrixFromFile(int matrix[15][15], const char *filename) {
 }
 
 // Read hospital names from .txt or .csv
-void readHospitalNamesFromFile(char hospital_names[15][50], const char *filename) {
+void readHospitalNamesFromFile(char hospital_names[15][50], const char *filename)
+{
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("Error opening file %s for reading.\n", filename);
         exit(EXIT_FAILURE);
     }
     char line[256];
-    for (int i = 0; i < 15; i++) {
-        if (!fgets(line, sizeof(line), file)) {
+    for (int i = 0; i < 15; i++)
+    {
+        if (!fgets(line, sizeof(line), file))
+        {
             printf("Error reading hospital names from file %s.\n", filename);
             fclose(file);
             exit(EXIT_FAILURE);
         }
-        if (is_csv_file(filename)) {
+        if (is_csv_file(filename))
+        {
             char *token = strtok(line, ",\n");
-            if (token) strncpy(hospital_names[i], token, 49);
-            else hospital_names[i][0] = '\0';
-        } else {
+            if (token)
+                strncpy(hospital_names[i], token, 49);
+            else
+                hospital_names[i][0] = '\0';
+        }
+        else
+        {
             line[strcspn(line, "\n")] = '\0';
             strncpy(hospital_names[i], line, 49);
         }
@@ -77,11 +95,13 @@ void readHospitalNamesFromFile(char hospital_names[15][50], const char *filename
 }
 
 // Prompt user for file path, use default if empty
-void prompt_filepath(const char *prompt, char *out, size_t outsize, const char *def) {
+void prompt_filepath(const char *prompt, char *out, size_t outsize, const char *def)
+{
     printf("%s [%s]: ", prompt, def);
     fgets(out, outsize, stdin);
     out[strcspn(out, "\n")] = '\0';
-    if (strlen(out) == 0) strncpy(out, def, outsize-1);
+    if (strlen(out) == 0)
+        strncpy(out, def, outsize - 1);
 }
 
 struct node
@@ -92,7 +112,22 @@ struct node
     struct node *link;
 };
 
-typedef struct node * NODE;
+typedef struct node *NODE;
+
+// Add Patient Record Structure
+struct Patient
+{
+    int id;
+    char name[50];
+    int age;
+    char bloodGroup[5];
+    char vaccinesDone;
+    char areaOfTreatment[50];
+    char insurance[5];
+    long long phoneNumber;
+    char hospitalAssigned[50];
+    double optimalCost;
+};
 
 // Function to insert a node at the rear of the linked list
 NODE insert_rear(char hospital_name[], int casualties, int weight, NODE first)
@@ -141,7 +176,7 @@ void display(NODE first)
 
         if (cur->link != NULL)
             printf(" -> ");
-        
+
         cur = cur->link;
     }
     printf("\n");
@@ -182,7 +217,7 @@ void displayAdjacencyList(NODE *adjList, int hospitals, char hospital_names[15][
     {
         printf("Hospital: %s\n", hospital_names[i]);
         printf("Connected Hospitals / Neighbors:\n");
-        display(adjList[i]);  // Assuming this prints the adjacency list of the ith hospital
+        display(adjList[i]); // Assuming this prints the adjacency list of the ith hospital
         printf("------------------------------\n\n");
     }
     printf("End of adjacency lists.\n");
@@ -273,10 +308,13 @@ bool isPatientIdExist(int patientId)
 
 // Function to handle patient details
 
-bool isValidBloodGroup(const char *bg) {
+bool isValidBloodGroup(const char *bg)
+{
     const char *valid[] = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
-    for (int i = 0; i < 8; i++) {
-        if (strcmp(bg, valid[i]) == 0) return true;
+    for (int i = 0; i < 8; i++)
+    {
+        if (strcmp(bg, valid[i]) == 0)
+            return true;
     }
     return false;
 }
@@ -289,76 +327,96 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     char vaccinesDone;
 
     // Patient ID
-    while (true) {
+    while (true)
+    {
         printf("Enter unique 4-digit Patient ID: ");
         scanf("%d", &patientId);
-        if (patientId >= 1000 && patientId <= 9999 && !isPatientIdExist(patientId)) break;
-        if (patientId < 1000 || patientId > 9999) {
+        if (patientId >= 1000 && patientId <= 9999 && !isPatientIdExist(patientId))
+            break;
+        if (patientId < 1000 || patientId > 9999)
+        {
             printf("Invalid Patient ID. Must be a 4-digit number.\n");
-        } else {
+        }
+        else
+        {
             printf("Patient already exists. Proceeding with hospital assignment...\n");
             return true;
         }
     }
 
     // Name
-    while (true) {
+    while (true)
+    {
         printf("Name: ");
         scanf("%s", name);
-        if (isalpha(name[0])) break;
+        if (isalpha(name[0]))
+            break;
         printf("Invalid name. Must start with a letter.\n");
     }
 
     // Age
-    while (true) {
+    while (true)
+    {
         printf("Age: ");
         scanf("%d", &age);
-        if (age > 0 && age <= 120) break;
+        if (age > 0 && age <= 120)
+            break;
         printf("Age must be between 1 and 120.\n");
     }
 
     // Blood Group
-    while (true) {
+    while (true)
+    {
         printf("Blood Group (e.g., A+): ");
         scanf("%s", bloodGroup);
-        if (isValidBloodGroup(bloodGroup)) break;
+        if (isValidBloodGroup(bloodGroup))
+            break;
         printf("Invalid blood group.\n");
     }
 
     // Vaccination
-    while (true) {
+    while (true)
+    {
         printf("Have you received both doses of the COVID-19 vaccine? (y/n): ");
         scanf(" %c", &vaccinesDone);
-        if (vaccinesDone == 'y' || vaccinesDone == 'n') break;
+        if (vaccinesDone == 'y' || vaccinesDone == 'n')
+            break;
         printf("Enter 'y' or 'n' only.\n");
     }
 
     // Area of Treatment
-    while (true) {
+    while (true)
+    {
         printf("Area of Treatment required: ");
         scanf("%s", areaOfTreatment);
-        if (strlen(areaOfTreatment) > 0) break;
+        if (strlen(areaOfTreatment) > 0)
+            break;
         printf("Area of treatment cannot be empty.\n");
     }
 
     // Insurance
-    while (true) {
+    while (true)
+    {
         printf("Insurance? (yes/no): ");
         scanf("%s", insurance);
-        if (strcmp(insurance, "yes") == 0 || strcmp(insurance, "no") == 0) break;
+        if (strcmp(insurance, "yes") == 0 || strcmp(insurance, "no") == 0)
+            break;
         printf("Please enter 'yes' or 'no'.\n");
     }
 
     // Phone Number
-    while (true) {
+    while (true)
+    {
         printf("Phone Number: ");
         scanf("%lld", &phoneNumber);
-        if (phoneNumber >= 1000000000LL && phoneNumber <= 9999999999LL) break;
+        if (phoneNumber >= 1000000000LL && phoneNumber <= 9999999999LL)
+            break;
         printf("Phone number must be 10 digits.\n");
     }
 
     FILE *patientFile = fopen("patient_details.txt", "a");
-    if (patientFile == NULL) {
+    if (patientFile == NULL)
+    {
         printf("Error opening patient details file.\n");
         return false;
     }
@@ -381,17 +439,22 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
 }
 
 // Simulate ambulance movement with progress bar
-void simulateAmbulanceMovement(const char* srcName, const char* destName, int steps, int delayMs) {
+void simulateAmbulanceMovement(const char *srcName, const char *destName, int steps, int delayMs)
+{
     printf("\nAmbulance is moving from %s to %s...\n", srcName, destName);
     printf("[                                                  ] 0%%");
     fflush(stdout);
-    for (int i = 1; i <= steps; ++i) {
-        usleep(delayMs * 1000); // delayMs milliseconds
+    for (int i = 1; i <= steps; ++i)
+    {
+        usleep(delayMs * 1000);          // delayMs milliseconds
         int progress = (i * 50) / steps; // 50 chars wide
         printf("\r[");
-        for (int j = 0; j < 50; ++j) {
-            if (j < progress) printf("#");
-            else printf(" ");
+        for (int j = 0; j < 50; ++j)
+        {
+            if (j < progress)
+                printf("#");
+            else
+                printf(" ");
         }
         printf("] %d%%", (i * 100) / steps);
         fflush(stdout);
@@ -400,24 +463,30 @@ void simulateAmbulanceMovement(const char* srcName, const char* destName, int st
 }
 
 // Structure for ambulance
-struct Ambulance {
+struct Ambulance
+{
     int id;
-    int location; // 1-based hospital index
+    int location;    // 1-based hospital index
     char status[16]; // e.g., "available", "busy"
 };
 #define MAX_AMBULANCES 20
 
 // Read ambulances from file
-int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char* filename) {
-    FILE* f = fopen(filename, "r");
-    if (!f) return 0;
+int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filename)
+{
+    FILE *f = fopen(filename, "r");
+    if (!f)
+        return 0;
     char line[128];
     int count = 0;
-    while (fgets(line, sizeof(line), f) && count < maxAmb) {
-        if (line[0] == '/' || line[0] == '\\' || line[0] == '\n') continue; // skip comments/empty
+    while (fgets(line, sizeof(line), f) && count < maxAmb)
+    {
+        if (line[0] == '/' || line[0] == '\\' || line[0] == '\n')
+            continue; // skip comments/empty
         int id, loc;
         char status[16];
-        if (sscanf(line, "%d,%d,%15s", &id, &loc, status) == 3) {
+        if (sscanf(line, "%d,%d,%15s", &id, &loc, status) == 3)
+        {
             ambulances[count].id = id;
             ambulances[count].location = loc;
             strncpy(ambulances[count].status, status, 15);
@@ -429,12 +498,16 @@ int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char* filena
     return count;
 }
 // Find nearest available ambulance to a given hospital
-int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15]) {
+int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15])
+{
     int minDist = INT_MAX, ambIdx = -1;
-    for (int i = 0; i < ambCount; ++i) {
-        if (strcmp(ambulances[i].status, "available") != 0) continue;
-        int dist = weights[ambulances[i].location-1][src-1];
-        if (dist > 0 && dist < minDist) {
+    for (int i = 0; i < ambCount; ++i)
+    {
+        if (strcmp(ambulances[i].status, "available") != 0)
+            continue;
+        int dist = weights[ambulances[i].location - 1][src - 1];
+        if (dist > 0 && dist < minDist)
+        {
             minDist = dist;
             ambIdx = i;
         }
@@ -443,14 +516,18 @@ int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, i
 }
 
 // Update ambulance status and location in file
-void updateAmbulanceStatus(int ambId, int newLocation, const char* newStatus, const char* filename) {
+void updateAmbulanceStatus(int ambId, int newLocation, const char *newStatus, const char *filename)
+{
     struct Ambulance ambulances[MAX_AMBULANCES];
     int count = readAmbulances(ambulances, MAX_AMBULANCES, filename);
-    FILE* f = fopen(filename, "w");
-    if (!f) return;
+    FILE *f = fopen(filename, "w");
+    if (!f)
+        return;
     fprintf(f, "// Format: AmbulanceID,CurrentHospitalIndex (1-based),Status\n");
-    for (int i = 0; i < count; ++i) {
-        if (ambulances[i].id == ambId) {
+    for (int i = 0; i < count; ++i)
+    {
+        if (ambulances[i].id == ambId)
+        {
             ambulances[i].location = newLocation;
             strncpy(ambulances[i].status, newStatus, 15);
             ambulances[i].status[15] = '\0';
@@ -460,24 +537,227 @@ void updateAmbulanceStatus(int ambId, int newLocation, const char* newStatus, co
     fclose(f);
 }
 
-
 // Display all ambulances and their locations, status, and estimated time to src
-void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15]) {
+void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15])
+{
     printf("\nAmbulance Status List (all ambulances):\n");
     int count = 0;
-    for (int i = 0; i < ambCount; ++i) {
-        int delay = weights[ambulances[i].location-1][src-1];
-        printf("  Ambulance %d at %s | Status: %s | ", ambulances[i].id, hospital_names[ambulances[i].location-1], ambulances[i].status);
-        if (ambulances[i].location == src) {
+    for (int i = 0; i < ambCount; ++i)
+    {
+        int delay = weights[ambulances[i].location - 1][src - 1];
+        printf("  Ambulance %d at %s | Status: %s | ", ambulances[i].id, hospital_names[ambulances[i].location - 1], ambulances[i].status);
+        if (ambulances[i].location == src)
+        {
             printf("Already at emergency location (0 seconds to reach)\n");
-        } else if (delay >= 0 && delay < 10000) {
+        }
+        else if (delay >= 0 && delay < 10000)
+        {
             printf("Estimated time to reach emergency: %d seconds\n", delay);
-        } else {
+        }
+        else
+        {
             printf("Cannot reach emergency location directly\n");
         }
         count++;
     }
     printf("Total ambulances: %d\n", count);
+}
+
+// New function to search patient by ID
+struct Patient *searchPatientById(int patientId)
+{
+    FILE *file = fopen("patient_details.txt", "r");
+    if (!file)
+        return NULL;
+
+    struct Patient *patient = malloc(sizeof(struct Patient));
+    char line[256];
+    int found = 0;
+
+    // Initialize patient structure
+    memset(patient, 0, sizeof(struct Patient));
+
+    while (fgets(line, sizeof(line), file))
+    {
+        if (strstr(line, "Patient ID:"))
+        {
+            int id;
+            if (sscanf(line, "Patient ID: %d", &id) == 1 && id == patientId)
+            {
+                found = 1;
+                patient->id = id;
+
+                // Go back to start of patient record
+                long pos = ftell(file);
+                fseek(file, 0, SEEK_SET);
+                int inRecord = 0;
+
+                // Read file until we find our record
+                while (fgets(line, sizeof(line), file))
+                {
+                    if (strstr(line, "Patient ID:"))
+                    {
+                        int currentId;
+                        sscanf(line, "Patient ID: %d", &currentId);
+                        if (currentId == patientId)
+                        {
+                            inRecord = 1;
+                            continue;
+                        }
+                    }
+
+                    if (inRecord)
+                    {
+                        if (strstr(line, "-----------------"))
+                        {
+                            break; // End of record
+                        }
+
+                        char field[50];
+                        if (sscanf(line, "Name: %[^\n]", patient->name) == 1)
+                            continue;
+                        if (sscanf(line, "Age: %d", &patient->age) == 1)
+                            continue;
+                        if (sscanf(line, "Blood Group: %[^\n]", patient->bloodGroup) == 1)
+                            continue;
+                        if (sscanf(line, "Vaccines Done: %c", &patient->vaccinesDone) == 1)
+                            continue;
+                        if (sscanf(line, "Area of Treatment: %[^\n]", patient->areaOfTreatment) == 1)
+                            continue;
+                        if (sscanf(line, "Insurance: %[^\n]", patient->insurance) == 1)
+                            continue;
+                        if (sscanf(line, "Phone Number: %lld", &patient->phoneNumber) == 1)
+                            continue;
+                        if (sscanf(line, "Hospital Assigned: %[^\n]", patient->hospitalAssigned) == 1)
+                            continue;
+                        if (sscanf(line, "Optimal Cost: %lf", &patient->optimalCost) == 1)
+                            continue;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    fclose(file);
+    if (!found)
+    {
+        free(patient);
+        return NULL;
+    }
+    return patient;
+}
+
+// Function to update patient records
+bool updatePatientRecord(struct Patient *patient)
+{
+    FILE *file = fopen("patient_details.txt", "r");
+    FILE *temp = fopen("temp.txt", "w");
+    if (!file || !temp)
+        return false;
+
+    char line[256];
+    bool found = false;
+    while (fgets(line, sizeof(line), file))
+    {
+        if (strstr(line, "Patient ID:"))
+        {
+            int id;
+            sscanf(line, "Patient ID: %d", &id);
+            if (id == patient->id)
+            {
+                found = true;
+                fprintf(temp, "Name: %s\n", patient->name);
+                fprintf(temp, "Age: %d\n", patient->age);
+                fprintf(temp, "Blood Group: %s\n", patient->bloodGroup);
+                fprintf(temp, "Patient ID: %d\n", patient->id);
+                fprintf(temp, "Vaccines Done: %c\n", patient->vaccinesDone);
+                fprintf(temp, "Area of Treatment: %s\n", patient->areaOfTreatment);
+                fprintf(temp, "Insurance: %s\n", patient->insurance);
+                fprintf(temp, "Phone Number: %lld\n", patient->phoneNumber);
+                fprintf(temp, "Hospital Assigned: %s\n", patient->hospitalAssigned);
+                fprintf(temp, "Optimal Cost: %.2lf\n", patient->optimalCost);
+                fprintf(temp, "-----------------\n");
+
+                // Skip original record
+                for (int i = 0; i < 11; i++)
+                {
+                    fgets(line, sizeof(line), file);
+                }
+            }
+            else
+            {
+                fputs(line, temp);
+            }
+        }
+        else
+        {
+            fputs(line, temp);
+        }
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    if (found)
+    {
+        remove("patient_details.txt");
+        rename("temp.txt", "patient_details.txt");
+    }
+    else
+    {
+        remove("temp.txt");
+    }
+
+    return found;
+}
+
+// Function to generate statistics
+void generatePatientStatistics()
+{
+    FILE *file = fopen("patient_details.txt", "r");
+    if (!file)
+        return;
+
+    int totalPatients = 0;
+    int vaccinated = 0;
+    int withInsurance = 0;
+    double totalCost = 0;
+
+    char line[256];
+    while (fgets(line, sizeof(line), file))
+    {
+        if (strstr(line, "Patient ID:"))
+        {
+            totalPatients++;
+        }
+        else if (strstr(line, "Vaccines Done: y"))
+        {
+            vaccinated++;
+        }
+        else if (strstr(line, "Insurance: yes"))
+        {
+            withInsurance++;
+        }
+        else if (strstr(line, "Optimal Cost:"))
+        {
+            double cost;
+            sscanf(line, "Optimal Cost: %lf", &cost);
+            totalCost += cost;
+        }
+    }
+
+    fclose(file);
+
+    printf("\n=== Patient Statistics ===\n");
+    printf("Total Patients: %d\n", totalPatients);
+    printf("Vaccinated Patients: %d (%.1f%%)\n", vaccinated,
+           totalPatients > 0 ? (vaccinated * 100.0 / totalPatients) : 0);
+    printf("Patients with Insurance: %d (%.1f%%)\n", withInsurance,
+           totalPatients > 0 ? (withInsurance * 100.0 / totalPatients) : 0);
+    printf("Average Cost per Patient: %.2f INR\n",
+           totalPatients > 0 ? (totalCost / totalPatients) : 0);
+    printf("=======================\n");
 }
 
 int main()
@@ -523,16 +803,28 @@ int main()
     for (;;)
     {
         // Validate choice input
-        while (1) {
-            printf("\nEnter your choice\n1.Finding_Hospital\n2.Print_Hospital_Name\n3.Display_Hospitals_List\n4:Exit: ");
-            if (scanf("%d", &choice) == 1 && choice >= 1 && choice <= 4) break;
-            printf("Invalid choice. Please select a valid option (1-4).\n");
-            while (getchar() != '\n'); // clear input buffer
+        while (1)
+        {
+            printf("\nEnter your choice\n");
+            printf("1. Finding Hospital\n");
+            printf("2. Print Hospital Name\n");
+            printf("3. Display Hospitals List\n");
+            printf("4. Search Patient Record\n");
+            printf("5. Update Patient Record\n");
+            printf("6. Generate Statistics\n");
+            printf("7. Exit\n");
+
+            if (scanf("%d", &choice) == 1 && choice >= 1 && choice <= 7)
+                break;
+            printf("Invalid choice. Please select a valid option (1-7).\n");
+            while (getchar() != '\n')
+                ;
         }
 
         printf("\n");
 
-        if (choice < 1 || choice > 4) {
+        if (choice < 1 || choice > 7)
+        {
             printf("Invalid choice. Please select a valid option.\n");
             continue; // This is redundant because we validated, but keep it as is
         }
@@ -541,25 +833,31 @@ int main()
         {
         case 1:
             // Validate emergency input
-            while (1) {
+            while (1)
+            {
                 printf("Is it a case of emergency?(y/n): \n");
                 scanf(" %c", &input1);
-                if (input1 == 'y' || input1 == 'n') break;
+                if (input1 == 'y' || input1 == 'n')
+                    break;
                 printf("Invalid input. Please enter 'y' or 'n'.\n");
-                while (getchar() != '\n');
+                while (getchar() != '\n')
+                    ;
             }
 
             if (input1 == 'y')
             {
                 // Validate source hospital input
-                while (1) {
+                while (1)
+                {
                     printf("\nSelect a number corresponding to your nearest location.\n");
                     printf("1.Rajaji nagar  2.Sahakar Nagar  3.Sanjaynagar  4.Yeshwanthpur  5.Nagarbavi\n");
                     printf("6.Bannerghatta  7.Shanti Nagar  8.Marathahalli  9.Sarjapur  10.Jayanagar\n");
                     printf("11.Bommasandra  12.Whitefield  13.Krishnarajapuram  14.Yelahanka  15.Kengeri: \n");
-                    if (scanf("%d", &src) == 1 && src >= 1 && src <= hospitals) break;
+                    if (scanf("%d", &src) == 1 && src >= 1 && src <= hospitals)
+                        break;
                     printf("Invalid nearest location hospital number. Please enter a number between 1 and 15.\n");
-                    while (getchar() != '\n');
+                    while (getchar() != '\n')
+                        ;
                 }
 
                 // Show all ambulances and their time delays BEFORE any hospital/casualty logic
@@ -623,11 +921,14 @@ int main()
 
                     // Find and dispatch the nearest available ambulance
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
-                    if (ambIdx != -1) {
-                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location-1]);
-                        simulateAmbulanceMovement(hospital_names[src-1], hospital_names[nearestHospital-1], 30, 80);
+                    if (ambIdx != -1)
+                    {
+                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
+                        simulateAmbulanceMovement(hospital_names[src - 1], hospital_names[nearestHospital - 1], 30, 80);
                         updateAmbulanceStatus(ambulances[ambIdx].id, nearestHospital, "busy", "ambulance_locations.txt");
-                    } else {
+                    }
+                    else
+                    {
                         printf("No available ambulance could be dispatched!\n");
                     }
                     fflush(stdout);
@@ -639,9 +940,12 @@ int main()
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
 
-                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor)) {
+                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor))
+                    {
                         printf("Patient can be admitted to the hospital.\n\n");
-                    } else {
+                    }
+                    else
+                    {
                         printf("Patient can not be admitted due to invalid input.\n\n");
                     }
                     fflush(stdout);
@@ -655,14 +959,17 @@ int main()
             else if (input1 == 'n')
             {
                 // Validate source hospital input
-                while (1) {
+                while (1)
+                {
                     printf("\nSelect the number corresponding to your nearest location: \n");
                     printf("1.Rajaji nagar   2.Sahakar Nagar   3.Sanjaynagar         4.Yeshwanthpur   5.Nagarbavi\n");
                     printf("6.Bannerghatta   7.Shanti Nagar    8.Marathahalli        9.Sarjapur       10.Jayanagar\n");
                     printf("11.Bommasandra   12.Whitefield     13.Krishnarajapuram   14.Yelahanka     15.Kengeri: \n");
-                    if (scanf("%d", &src) == 1 && src >= 1 && src <= 15) break;
+                    if (scanf("%d", &src) == 1 && src >= 1 && src <= 15)
+                        break;
                     printf("Invalid nearest location hospital number. Please enter a number between 1 and 15.\n");
-                    while (getchar() != '\n');
+                    while (getchar() != '\n')
+                        ;
                 }
 
                 // Show all ambulances and their time delays BEFORE hospital selection
@@ -674,16 +981,19 @@ int main()
                 fflush(stdout);
 
                 // Validate destination hospital input
-                while (1) {
+                while (1)
+                {
                     printf("\nSelect the hospital you want to go: \n");
                     printf("1.Suguna_Hospital(Rajajinagar)\t\t2.Aster_CMI_Hospital(Sahakarnagar)\t3.MS_Ramaiah_Hospital(Sanjaynagar)\n");
                     printf("4.People's_Tree_Hospital(Yeshwanthpur) \t5.Fortis_Hospital(Nagarbhavi)\t\t6.Appolo_Hospital(Bannerghatta)\n");
                     printf("7.HCG_Hospital(Shantinagar)\t\t8.Cloudnine_Hospital(Marathahalli)\t9.Columbia_Asia(Sarjapur)\n");
                     printf("10.Sagar_Hospital(Jayanagar)\t\t11.Narayana_Hrudayalaya(Bommasandra)\t12.Manipal_Hospital(Whitefield)\n");
                     printf("13.Koshys_Hospital(Krishnarajapuram)\t14.Sparsh_Hospital(Yelahanka)\t\t15.BGS_Gleneagles_Hospital(Kengeri)\n");
-                    if (scanf("%d", &dest) == 1 && dest >= 1 && dest <= 15) break;
+                    if (scanf("%d", &dest) == 1 && dest >= 1 && dest <= 15)
+                        break;
                     printf("Invalid destination hospital number. Please enter a number between 1 and 15.\n");
-                    while (getchar() != '\n');
+                    while (getchar() != '\n')
+                        ;
                 }
 
                 printf("\nFinding the optimal route: \n");
@@ -696,7 +1006,7 @@ int main()
                 // Initialize distances and previous nodes
                 for (int i = 0; i < hospitals; i++)
                 {
-                    distance[i] = INT_MAX; //INFINITY
+                    distance[i] = INT_MAX; // INFINITY
                     previous[i] = -1;
                     visited[i] = false;
                 }
@@ -754,7 +1064,8 @@ int main()
                         edgeCount++;
                         printf("%s <- ", hospital_names[current]);
                     }
-                    else {
+                    else
+                    {
                         printf("%s", hospital_names[current]);
                     }
                     current = prev;
@@ -770,13 +1081,17 @@ int main()
 
                     // Find and dispatch the nearest available ambulance
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
-                    if (ambIdx != -1) {
-                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location-1]);
-                        for (int i = routeLen-1; i > 0; --i) {
-                            simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i-1]], 15, 60);
+                    if (ambIdx != -1)
+                    {
+                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
+                        for (int i = routeLen - 1; i > 0; --i)
+                        {
+                            simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i - 1]], 15, 60);
                         }
                         updateAmbulanceStatus(ambulances[ambIdx].id, dest, "busy", "ambulance_locations.txt");
-                    } else {
+                    }
+                    else
+                    {
                         printf("No available ambulance could be dispatched!\n");
                     }
 
@@ -787,9 +1102,12 @@ int main()
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
 
-                    if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor)) {
+                    if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor))
+                    {
                         printf("Patient can be admitted to the hospital.\n\n");
-                    } else {
+                    }
+                    else
+                    {
                         printf("Patient can not be admitted due to invalid input.\n\n");
                     }
                     break;
@@ -807,11 +1125,14 @@ int main()
 
         case 2:
             // Validate near_hosp input
-            while (1) {
+            while (1)
+            {
                 printf("Enter the hospital number to print its name: ");
-                if (scanf("%d", &near_hosp) == 1 && near_hosp >= 1 && near_hosp <= hospitals) break;
+                if (scanf("%d", &near_hosp) == 1 && near_hosp >= 1 && near_hosp <= hospitals)
+                    break;
                 printf("Invalid hospital number. Please enter a number between 1 and %d.\n", hospitals);
-                while (getchar() != '\n');
+                while (getchar() != '\n')
+                    ;
             }
             printHospitalName(near_hosp, hospital_names);
             break;
@@ -821,6 +1142,68 @@ int main()
             break;
 
         case 4:
+        {
+            int searchId;
+            printf("Enter Patient ID to search: ");
+            scanf("%d", &searchId);
+
+            struct Patient *patient = searchPatientById(searchId);
+            if (patient)
+            {
+                printf("\nPatient Found:\n");
+                printf("Name: %s\n", patient->name);
+                printf("Age: %d\n", patient->age);
+                printf("Blood Group: %s\n", patient->bloodGroup);
+                printf("Patient ID: %d\n", patient->id);
+                printf("Vaccines Done: %c\n", patient->vaccinesDone);
+                printf("Area of Treatment: %s\n", patient->areaOfTreatment);
+                printf("Insurance: %s\n", patient->insurance);
+                printf("Phone Number: %lld\n", patient->phoneNumber);
+                printf("Hospital Assigned: %s\n", patient->hospitalAssigned);
+                printf("Optimal Cost: %.2f INR\n", patient->optimalCost);
+                free(patient);
+            }
+            else
+            {
+                printf("Patient not found.\n");
+            }
+            break;
+        }
+
+        case 5:
+        {
+            int updateId;
+            printf("Enter Patient ID to update: ");
+            scanf("%d", &updateId);
+
+            struct Patient *patient = searchPatientById(updateId);
+            if (patient)
+            {
+                printf("Enter new phone number: ");
+                scanf("%lld", &patient->phoneNumber);
+
+                if (updatePatientRecord(patient))
+                {
+                    printf("Record updated successfully.\n");
+                }
+                else
+                {
+                    printf("Error updating record.\n");
+                }
+                free(patient);
+            }
+            else
+            {
+                printf("Patient not found.\n");
+            }
+            break;
+        }
+
+        case 6:
+            generatePatientStatistics();
+            break;
+
+        case 7:
             return 0;
 
         default:
