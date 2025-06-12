@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emergency Dashboard | HealthApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="style.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="index.html">HealthApp</a>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <h2 class="mb-4 text-center text-primary">Emergency Patient Intake</h2>
+
+    <form class="mx-auto" style="max-width: 600px;">
+      <div class="mb-3">
+        <label for="patientName" class="form-label">Patient Name</label>
+        <input type="text" class="form-control" id="patientName" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="patientAge" class="form-label">Age</label>
+        <input type="number" class="form-control" id="patientAge" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="location" class="form-label">Emergency Location</label>
+        <input type="text" class="form-control" id="location" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="severity" class="form-label">Severity Level</label>
+        <select class="form-select" id="severity" required>
+          <option value="">Select</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
