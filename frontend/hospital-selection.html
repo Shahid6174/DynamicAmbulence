@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Select Hospital | HealthApp</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="style.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">HealthApp</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbar" aria-controls="topNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="topNavbar">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle"></i> Admin
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+              <li><a class="dropdown-item" href="settings.html">Profile</a></li>
+              <li><hr class="dropdown-divider" /></li>
+              <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- Sidebar -->
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-white sidebar collapse border-end vh-100 pt-3">
+        <div class="position-sticky">
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1">
+              <a class="nav-link fw-semibold" href="dashboard.html">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a class="nav-link active" href="hospitalselection.html">
+                <i class="bi bi-hospital-fill me-2"></i> Hospitals
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a class="nav-link" href="appointments.html">
+                <i class="bi bi-calendar-check-fill me-2"></i> Appointments
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a class="nav-link" href="settings.html">
+                <i class="bi bi-gear-fill me-2"></i> Settings
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        <h1 class="h4 text-primary mb-4">Select a Hospital</h1>
+        <div class="row" id="hospital-list">
+          <!-- Hospital cards will be dynamically inserted here -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const hospitals = [
+      { name: "Appolo Hospital", location: "Bannerghatta", image: "https://via.placeholder.com/300x150?text=Appolo" },
+      { name: "Columbia Asia", location: "Sarjapur", image: "https://via.placeholder.com/300x150?text=Columbia+Asia" },
+      { name: "Narayana Hrudayalaya", location: "Bommasandra", image: "https://via.placeholder.com/300x150?text=Narayana" },
+      { name: "Sagar Hospital", location: "Jayanagar", image: "https://via.placeholder.com/300x150?text=Sagar" },
+      { name: "Fortis Hospital", location: "Nagarbhavi", image: "https://via.placeholder.com/300x150?text=Fortis" },
+      { name: "Manipal Hospital", location: "Whitefield", image: "https://via.placeholder.com/300x150?text=Manipal" },
+      { name: "Aster CMI Hospital", location: "Sahakar Nagar", image: "https://via.placeholder.com/300x150?text=Aster+CMI" },
+      { name: "MS Ramaiah Hospital", location: "Sanjaynagar", image: "https://via.placeholder.com/300x150?text=MS+Ramaiah" },
+      { name: "People's Tree Hospital", location: "Yeshwanthpur", image: "https://via.placeholder.com/300x150?text=People's+Tree" },
+      { name: "Suguna Hospital", location: "Rajajinagar", image: "https://via.placeholder.com/300x150?text=Suguna" },
+      { name: "St John's Hospital", location: "Koramangala", image: "https://via.placeholder.com/300x150?text=St+John's" },
+      { name: "BGS Gleneagles Hospital", location: "Kengeri", image: "https://via.placeholder.com/300x150?text=BGS" },
+      { name: "Cloudnine Hospital", location: "Marathahalli", image: "https://via.placeholder.com/300x150?text=Cloudnine" },
+      { name: "HCG Hospital", location: "Shantinagar", image: "https://via.placeholder.com/300x150?text=HCG" },
+      { name: "Sparsh Hospital", location: "Yelahanka", image: "https://via.placeholder.com/300x150?text=Sparsh" }
+    ];
+
+    const container = document.getElementById('hospital-list');
+
+    hospitals.forEach(hospital => {
+      const col = document.createElement('div');
+      col.className = 'col-md-4 mb-4';
+      col.innerHTML = `
+        <div class="card shadow-sm h-100">
+          <img src="${hospital.image}" class="card-img-top" alt="${hospital.name}">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">${hospital.name}</h5>
+            <p class="card-text mb-3">${hospital.location}</p>
+            <button class="btn btn-primary mt-auto w-100" onclick='selectHospital("${hospital.name}", "${hospital.location}")'>Select</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(col);
+    });
+
+    function selectHospital(name, location) {
+      localStorage.setItem('selectedHospital', JSON.stringify({ name, location }));
+      alert(`You selected ${name}, ${location}`);
+      // window.location.href = 'confirmation.html';
+    }
+  </script>
+</body>
+</html>
+
+
+
