@@ -680,7 +680,7 @@ struct Patient* searchPatientById(int id) {
 
                 // Optimal Cost
                 if (fgets(line, sizeof(line), file)) {
-                    if (sscanf(line, "Optimal Cost: %lf", &foundPatient->optimalCost) != 1) {
+                    if (sscanf(line, "Optimal Cost: %lf INR", &foundPatient->optimalCost) != 1) {
                         foundPatient->optimalCost = 0.0; // Default or error value
                         fprintf(stderr, "Warning: Could not parse Optimal Cost for ID %d. Setting to 0.0.\n", id);
                     }
@@ -743,12 +743,9 @@ bool updatePatientRecord(struct Patient *patient)
                 fprintf(temp, "Insurance: %s\n", patient->insurance);
                 fprintf(temp, "Phone Number: %s\n", patient->phoneNumber);
                 fprintf(temp, "Hospital Assigned: %s\n", patient->hospitalAssigned);
-                fprintf(temp, "Optimal Cost: %.2lf\n", patient->optimalCost);
+                fprintf(temp, "Optimal Cost: %.2lf INR\n", patient->optimalCost);
                 fprintf(temp, "-----------------\n"); // Separator line
 
-                // Skip the original record lines from the input file
-                // Start from line 1 (Name) as we already read "Patient ID"
-                // So, skip (line_count_in_record - 1) more lines
                 for (int i = 0; i < (line_count_in_record - 1); i++) {
                     if (fgets(line, sizeof(line), file) == NULL) {
                         // Handle unexpected EOF if file format is inconsistent

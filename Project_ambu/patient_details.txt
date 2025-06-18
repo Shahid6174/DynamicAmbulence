@@ -18,7 +18,7 @@ Area of Treatment: ENT
 Insurance: no
 Phone Number: 9798798792
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
-Optimal Cost: 1500.00 INR
+Optimal Cost: 4000.00 INR
 -----------------
 Patient ID: 1332
 Name: Sid
@@ -73,7 +73,7 @@ Area of Treatment: n
 Insurance: yes
 Phone Number: 1234567891
 Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
-Optimal Cost: 1500.00
+Optimal Cost: 1500.00 INR
 -----------------
 Patient ID: 4545
 Name: dbd
@@ -95,5 +95,5 @@ Area of Treatment: ent
 Insurance: no
 Phone Number: 1234565432
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
-Optimal Cost: 1500.00
+Optimal Cost: 1500.00 INR
 -----------------
