@@ -429,11 +429,10 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         printf("Error opening patient details file.\n");
         return false;
     }
-
+    fprintf(patientFile, "Patient ID: %d\n", patientId);
     fprintf(patientFile, "Name: %s\n", name);
     fprintf(patientFile, "Age: %d\n", age);
     fprintf(patientFile, "Blood Group: %s\n", bloodGroup);
-    fprintf(patientFile, "Patient ID: %d\n", patientId);
     fprintf(patientFile, "Vaccines Done: %c\n", vaccinesDone);
     fprintf(patientFile, "Area of Treatment: %s\n", areaOfTreatment);
     fprintf(patientFile, "Insurance: %s\n", insurance);
