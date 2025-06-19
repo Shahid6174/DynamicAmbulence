@@ -53,7 +53,7 @@ export default function Navbar() {
                   </li>
                   <li><hr className="dropdown-divider" /></li>
                   <li>
-                    <a className="dropdown-item d-flex align-items-center text-danger" href="/logout">
+                    <a className="dropdown-item d-flex align-items-center text-danger" href="/">
                       <i className="bi bi-box-arrow-right me-2"></i> Logout
                     </a>
                   </li>
