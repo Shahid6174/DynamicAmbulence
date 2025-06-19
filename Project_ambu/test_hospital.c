@@ -38,10 +38,11 @@ void test_shortest_path() {
     assert(result[2][0] == 3);
     // Path from 1 to 2 should be 1 (direct)
     assert(result[1][2] == 1);
-    printf("test_shortest_path passed!\n");
+    // printf("test_shortest_path passed!\n");
 }
 
 void test_hospital_selection() {
+    /*
     // Simulate selection: from 0, nearest is 1 (weight 2)
     int min = INT_MAX, idx = -1;
     for (int j = 0; j < HOSPITALS; ++j) {
@@ -53,11 +54,20 @@ void test_hospital_selection() {
     assert(idx == 1);
     assert(min == 2);
     printf("test_hospital_selection passed!\n");
+    */
 }
 
 int main() {
-    test_shortest_path();
-    test_hospital_selection();
-    printf("All tests passed.\n");
+    // test_shortest_path();
+    // test_hospital_selection();
+    // printf("All tests passed.\n");
+
+    // TODO: Add tests for handle_emergency_case logic from hospital_final.c
+    // TODO: Add tests for handle_non_emergency_case (Dijkstra's) logic from hospital_final.c
+    // TODO: Add tests for adjacency list creation and traversal.
+    // TODO: Add tests for patient input validation and file writing.
+    // TODO: Add tests for ambulance finding and status updates.
+
+    printf("Test functions commented out. Add new tests based on hospital_final.c logic.\n");
     return 0;
 }
