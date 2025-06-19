@@ -6,11 +6,11 @@ import { useState } from "react"
 
 import Stats from "./(subPages)/stats.jsx"
 import Patients from "./(subPages)/patients.jsx"
-import Appointments from "./(subPages)/appointments.jsx"
-import Billing from "./(subPages)/billing.jsx"
-import Doctors from "./(subPages)/doctors.jsx"
-import Reports from "./(subPages)/reports.jsx"
-import Settings from "./(subPages)/settings.jsx"
+import HospitalStatus from "./(subPages)/hospitalstatus.jsx"
+
+import SendFeed from "./(subPages)/sendfeedback.jsx"
+import Staff from "./(subPages)/hospitalstaff.jsx"
+
 
 export default function MainApp (props){
   const [section, setSection] = useState(0)
@@ -22,22 +22,17 @@ export default function MainApp (props){
           <Sidebar section = {section} setSection = {setSection}/>
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
             <div id="dashboardPage" className="content-page">
-              <h1 className="h2 text-primary mb-4">Welcome back, Admin!</h1>
+              <h1 className="h2 text-primary mb-4">Welcome back, Hospital Admin!</h1>
               <div className="row g-4" id="statsCards">
-                
+
               </div>
-             
-           
 
                 {section === 0 && <Stats />}
                 {section === 1 && <Patients/>}
-                {section === 2 && < Appointments />}
-                {section === 3 && < Doctors/>}
-                {section === 4 && < Reports />}
-                {section === 5 && < Billing/>}
-                {section === 6 && < Settings />}
-           
-              
+                {section === 2 && <HospitalStatus/>}
+                {section === 3 && <SendFeed/>}
+                {section === 4 && <Staff />}
+               
 
             </div>
           </main>
