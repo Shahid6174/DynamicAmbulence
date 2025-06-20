@@ -11,6 +11,7 @@ import Hospitals from "./(subPages)/hospitals.jsx"
 import Distress from "./(subPages)/distress.jsx"
 import RatingHospital from "./(subPages)/rating_hospital.jsx"
 import UserControl from "./(subPages)/usercontrol.jsx"
+import AmbulanceTracker from "./(subPages)/ambulance_tracker.jsx"
 
 export default function MainApp (props){
   const [section, setSection] = useState(0)
@@ -33,6 +34,7 @@ export default function MainApp (props){
                 {section === 3 && < Distress/>}
                 {section === 4 && < RatingHospital />}
                 {section === 5 && < UserControl />}
+                {section === 6 && < AmbulanceTracker />}
 
             </div>
           </main>

@@ -106,7 +106,7 @@ export default function PatientRecords() {
                     <td>{p.bill}</td>
                     <td className="text-end">
                       <Button size="sm" variant="outline-primary">
-                        <i className="bi bi-eye me-1"></i>View
+                        <i className="bi bi-eye me-1"></i>Edit
                       </Button>{' '}
                       <Button size="sm" variant="outline-secondary">
                         <i className="bi bi-download me-1"></i>Download

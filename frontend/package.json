@@ -12,6 +12,7 @@
     "better-sqlite3": "^11.10.0",
     "bootstrap": "^5.3.7",
     "mongodb": "^6.17.0",
+    "mongoose": "^8.16.0",
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.10",

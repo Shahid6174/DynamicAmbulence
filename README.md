@@ -103,14 +103,29 @@ gcc Project_ambu/hospital_final.c -o Project_ambu/hospital_final.exe
 gcc Project_ambu/test_hospital.c -o Project_ambu/test_hospital
 ./Project_ambu/test_hospital
 ```
-### 4. Run frontend
+### 4. Install Mongodb
+
+```bash
+wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/debian bullseye/mongodb-org/6.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+sudo apt update
+sudo apt install -y mongodb-mongosh
+```
+### 5. Import Stored data
+
 
 ```bash
 cd frontend
-npm install 
+mongorestore --db=healthapp --collection=Hospital src/data/healthapp/Hospital.bson
+mongorestore --db=healthapp --collection=patients src/data/healthapp/patients.bson
+mongorestore --db=healthapp --collection=Users src/data/healthapp/Users.bson
+```
+### 6. Run frontend
+
+```bash
+npm install
 npm run dev
 ```
-
 ---
 
 ## How It Works

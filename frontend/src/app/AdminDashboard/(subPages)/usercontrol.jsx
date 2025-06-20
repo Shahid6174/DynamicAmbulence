@@ -1,33 +1,106 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Button, Form, Table, Badge } from 'react-bootstrap';
 
-const defaultUsers = [
-  { id: 1, name: 'Ayush', role: 'admin', email: 'ayush@domain.com', status: 'active' },
-  { id: 2, name: 'Shahid', role: 'driver', email: 'shahid@domain.com', status: 'blocked' },
-];
-
 export default function UserAccessControl() {
-  const [users, setUsers] = useState(defaultUsers);
+  const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'operator' });
+  const [loading, setLoading] = useState(true);
 
-  const handleAddUser = () => {
-    const nextId = users.length + 1;
-    setUsers([...users, { ...newUser, id: nextId, status: 'active' }]);
-    setShowModal(false);
-    setNewUser({ name: '', email: '', role: 'operator' });
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/mongo?collection=Users');
+      const json = await res.json();
+      setUsers(json.data || []);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleStatus = (id) => {
-    setUsers(
-      users.map((user) =>
-        user.id === id
-          ? { ...user, status: user.status === 'active' ? 'blocked' : 'active' }
-          : user
-      )
-    );
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleAddUser = async () => {
+    const userData = {
+      ...newUser,
+      status: 'active',
+    };
+
+    try {
+      const res = await fetch('/api/mongo?collection=Users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: userData }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        setShowModal(false);
+        setNewUser({ name: '', email: '', role: 'operator' });
+        fetchUsers();
+      } else {
+        alert('❌ Error adding user: ' + result?.error);
+      }
+    } catch (err) {
+      console.error('Add user error:', err);
+      alert('❌ Network error');
+    }
+  };
+
+  const toggleStatus = async (user) => {
+    const newStatus = user.status === 'active' ? 'blocked' : 'active';
+
+    try {
+      const res = await fetch('/api/mongo?collection=Users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filter: { _id: typeof user._id === 'object' ? user._id.$oid || user._id : user._id },
+          update: { status: newStatus },
+        }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        alert('❌ Update failed: ' + result?.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Network error');
+    }
+  };
+
+  const handleDelete = async (user) => {
+    const confirm = window.confirm(`Delete user "${user.name}"?`);
+    if (!confirm) return;
+
+    try {
+      const res = await fetch('/api/mongo?collection=Users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filter: { _id: typeof user._id === 'object' ? user._id.$oid || user._id : user._id },
+        }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        alert('❌ Delete failed: ' + result?.error);
+      }
+    } catch (err) {
+      alert('❌ Network error');
+      console.error(err);
+    }
   };
 
   return (
@@ -43,48 +116,59 @@ export default function UserAccessControl() {
 
       <div className="card shadow-sm">
         <div className="card-body table-responsive">
-          <Table hover className="align-middle small">
-            <thead className="table-light">
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th className="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, i) => (
-                <tr key={user.id}>
-                  <td>{i + 1}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <Badge bg={user.role === 'admin' ? 'danger' : user.role === 'driver' ? 'secondary' : 'info'}>
-                      {user.role}
-                    </Badge>
-                  </td>
-                  <td>
-                    <Badge bg={user.status === 'active' ? 'success' : 'dark'}>{user.status}</Badge>
-                  </td>
-                  <td className="text-end">
-                    <Button
-                      size="sm"
-                      variant={user.status === 'active' ? 'outline-danger' : 'outline-success'}
-                      onClick={() => toggleStatus(user.id)}
-                    >
-                      {user.status === 'active' ? 'Block' : 'Unblock'}
-                    </Button>
-                  </td>
+          {loading ? (
+            <p className="text-center">Loading...</p>
+          ) : (
+            <Table hover className="align-middle small">
+              <thead className="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th className="text-end">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {users.map((user, i) => (
+                  <tr key={user._id || i}>
+                    <td>{i + 1}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <Badge bg={user.role === 'admin' ? 'danger' : user.role === 'driver' ? 'secondary' : 'info'}>
+                        {user.role}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Badge bg={user.status === 'active' ? 'success' : 'dark'}>{user.status}</Badge>
+                    </td>
+                    <td className="text-end d-flex justify-content-end gap-2">
+                      <Button
+                        size="sm"
+                        variant={user.status === 'active' ? 'outline-danger' : 'outline-success'}
+                        onClick={() => toggleStatus(user)}
+                      >
+                        {user.status === 'active' ? 'Block' : 'Unblock'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={() => handleDelete(user)}
+                      >
+                        <i className="bi bi-trash"></i>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Add User Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Add New User</Modal.Title>

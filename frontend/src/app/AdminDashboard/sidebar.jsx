@@ -13,7 +13,9 @@ export default function Sidebar({section,setSection}) {
     { icon: 'bi-hospital-fill', text: 'Manage Hospitals', route: '#hospitals' },
     { icon: 'bi-broadcast-pin', text: 'Distress Center', route: '#distress' },
     { icon: 'bi-bar-chart-line-fill', text: 'Performance & Ratings', route: '#performance' },
-    { icon: 'bi-person-gear', text: 'User Access Control', route: '#users' }
+    { icon: 'bi-person-gear', text: 'User Access Control', route: '#users' },
+    { icon: 'bi-truck-front-fill', text: 'Ambulance Tracker', route: '#ambulance-tracker' },
+
 ];
 
   return (
