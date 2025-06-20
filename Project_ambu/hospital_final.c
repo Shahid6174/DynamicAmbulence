@@ -9,6 +9,12 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#define MAX_LINE 1000
+#define MAX_PATIENTS 100
+#define MAX_FIELD_LEN 100
+#define FILENAME "patient_details.txt"
+#define MAX_PHONE_NUMBER_LEN 15 
+
 // Helper: check if file is CSV by extension
 bool is_csv_file(const char *filename)
 {
@@ -121,10 +127,13 @@ struct Patient
     char name[50];
     int age;
     char bloodGroup[5];
+    char gender;
+    char address[100];
+    char condition[100]; // e.g., "critical", "stable"
     char vaccinesDone;
     char areaOfTreatment[50];
     char insurance[5];
-    long long phoneNumber;
+    char phoneNumber[MAX_PHONE_NUMBER_LEN]; // Changed to string for easier handling
     char hospitalAssigned[50];
     double optimalCost;
 };
@@ -420,11 +429,10 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         printf("Error opening patient details file.\n");
         return false;
     }
-
+    fprintf(patientFile, "Patient ID: %d\n", patientId);
     fprintf(patientFile, "Name: %s\n", name);
     fprintf(patientFile, "Age: %d\n", age);
     fprintf(patientFile, "Blood Group: %s\n", bloodGroup);
-    fprintf(patientFile, "Patient ID: %d\n", patientId);
     fprintf(patientFile, "Vaccines Done: %c\n", vaccinesDone);
     fprintf(patientFile, "Area of Treatment: %s\n", areaOfTreatment);
     fprintf(patientFile, "Insurance: %s\n", insurance);
@@ -563,135 +571,210 @@ void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hosp
     printf("Total ambulances: %d\n", count);
 }
 
-// New function to search patient by ID
-struct Patient *searchPatientById(int patientId)
-{
-    FILE *file = fopen("patient_details.txt", "r");
-    if (!file)
+struct Patient* searchPatientById(int id) {
+    FILE *file = fopen(FILENAME, "r");
+    if (!file) {
+        perror("Error opening patient_details.txt for search");
         return NULL;
+    }
 
-    struct Patient *patient = malloc(sizeof(struct Patient));
-    char line[256];
-    int found = 0;
+    char line[MAX_FIELD_LEN * 2]; // Use a larger buffer for lines
+    struct Patient *foundPatient = NULL;
 
-    // Initialize patient structure
-    memset(patient, 0, sizeof(struct Patient));
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, "Patient ID:")) {
+            int current_id;
+            sscanf(line, "Patient ID: %d", &current_id);
 
-    while (fgets(line, sizeof(line), file))
-    {
-        if (strstr(line, "Patient ID:"))
-        {
-            int id;
-            if (sscanf(line, "Patient ID: %d", &id) == 1 && id == patientId)
-            {
-                found = 1;
-                patient->id = id;
-
-                // Go back to start of patient record
-                long pos = ftell(file);
-                fseek(file, 0, SEEK_SET);
-                int inRecord = 0;
-
-                // Read file until we find our record
-                while (fgets(line, sizeof(line), file))
-                {
-                    if (strstr(line, "Patient ID:"))
-                    {
-                        int currentId;
-                        sscanf(line, "Patient ID: %d", &currentId);
-                        if (currentId == patientId)
-                        {
-                            inRecord = 1;
-                            continue;
-                        }
-                    }
-
-                    if (inRecord)
-                    {
-                        if (strstr(line, "-----------------"))
-                        {
-                            break; // End of record
-                        }
-
-                        char field[50];
-                        if (sscanf(line, "Name: %[^\n]", patient->name) == 1)
-                            continue;
-                        if (sscanf(line, "Age: %d", &patient->age) == 1)
-                            continue;
-                        if (sscanf(line, "Blood Group: %[^\n]", patient->bloodGroup) == 1)
-                            continue;
-                        if (sscanf(line, "Vaccines Done: %c", &patient->vaccinesDone) == 1)
-                            continue;
-                        if (sscanf(line, "Area of Treatment: %[^\n]", patient->areaOfTreatment) == 1)
-                            continue;
-                        if (sscanf(line, "Insurance: %[^\n]", patient->insurance) == 1)
-                            continue;
-                        if (sscanf(line, "Phone Number: %lld", &patient->phoneNumber) == 1)
-                            continue;
-                        if (sscanf(line, "Hospital Assigned: %[^\n]", patient->hospitalAssigned) == 1)
-                            continue;
-                        if (sscanf(line, "Optimal Cost: %lf", &patient->optimalCost) == 1)
-                            continue;
-                    }
+            if (current_id == id) {
+                foundPatient = (struct Patient*)malloc(sizeof(struct Patient));
+                if (!foundPatient) {
+                    perror("Memory allocation failed in searchPatientById");
+                    fclose(file);
+                    return NULL;
                 }
-                break;
+                foundPatient->id = id; // Set the ID
+
+                // Initialize string fields to empty strings to avoid garbage if sscanf fails
+                foundPatient->name[0] = '\0';
+                foundPatient->bloodGroup[0] = '\0';
+                foundPatient->areaOfTreatment[0] = '\0';
+                foundPatient->insurance[0] = '\0';
+                foundPatient->phoneNumber[0] = '\0';
+                foundPatient->hospitalAssigned[0] = '\0';
+                foundPatient->vaccinesDone = ' '; // Default for char if not found/invalid
+
+                // Now read the rest of the fields. Be very careful with parsing.
+                // Each fgets reads a new line. sscanf attempts to parse it.
+
+                // Name
+                if (fgets(line, sizeof(line), file)) {
+                    // Check if it matches "Name: " and then extract.
+                    // If no name is provided (e.g., "Name:\n"), sscanf will return 0.
+                    // We still set a null terminator if it failed.
+                    if (sscanf(line, "Name: %[^\n]", foundPatient->name) != 1) {
+                        foundPatient->name[0] = '\0'; // Ensure it's an empty string
+                    }
+                } else { goto cleanup_error; }
+
+                // Age
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Age: %d", &foundPatient->age) != 1) {
+                        foundPatient->age = 0; // Default or error value
+                        fprintf(stderr, "Warning: Could not parse age for ID %d. Setting to 0.\n", id);
+                    }
+                } else { goto cleanup_error; }
+
+                // Blood Group
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Blood Group: %[^\n]", foundPatient->bloodGroup) != 1) {
+                        foundPatient->bloodGroup[0] = '\0'; // Ensure empty
+                    }
+                } else { goto cleanup_error; }
+
+                // Skip Patient ID line (if your file includes it again after blood group, usually not)
+                // Based on your updatePatientRecord, Patient ID is WRITTEN first.
+                // In searchPatientById, it's the first thing you read. So, you don't skip it here
+                // unless it appears a second time in the record (unlikely/bad format).
+                // Let's assume your file format means after Blood Group comes Vaccines Done, not ID again.
+
+                // Vaccines Done
+                if (fgets(line, sizeof(line), file)) {
+                    char temp_char;
+                    if (sscanf(line, "Vaccines Done: %c", &temp_char) == 1 &&
+                        (temp_char == 'Y' || temp_char == 'N' || temp_char == 'y' || temp_char == 'n')) {
+                        foundPatient->vaccinesDone = toupper(temp_char);
+                    } else {
+                        foundPatient->vaccinesDone = 'U'; // 'U' for unknown/unspecified
+                        fprintf(stderr, "Warning: Could not parse or validate Vaccines Done for ID %d. Setting to 'U'.\n", id);
+                    }
+                } else { goto cleanup_error; }
+
+                // Area of Treatment
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Area of Treatment: %[^\n]", foundPatient->areaOfTreatment) != 1) {
+                        foundPatient->areaOfTreatment[0] = '\0';
+                    }
+                } else { goto cleanup_error; }
+
+                // Insurance
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Insurance: %[^\n]", foundPatient->insurance) != 1) {
+                        foundPatient->insurance[0] = '\0';
+                    }
+                } else { goto cleanup_error; }
+
+                // Phone Number
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Phone Number: %[^\n]", foundPatient->phoneNumber) != 1) {
+                        foundPatient->phoneNumber[0] = '\0';
+                    }
+                } else { goto cleanup_error; }
+
+                // Hospital Assigned
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Hospital Assigned: %[^\n]", foundPatient->hospitalAssigned) != 1) {
+                        foundPatient->hospitalAssigned[0] = '\0';
+                    }
+                } else { goto cleanup_error; }
+
+                // Optimal Cost
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Optimal Cost: %lf INR", &foundPatient->optimalCost) != 1) {
+                        foundPatient->optimalCost = 0.0; // Default or error value
+                        fprintf(stderr, "Warning: Could not parse Optimal Cost for ID %d. Setting to 0.0.\n", id);
+                    }
+                } else { goto cleanup_error; }
+
+                // Read and verify the separator line
+                if (fgets(line, sizeof(line), file) == NULL || strstr(line, "---") == NULL) {
+                     fprintf(stderr, "Warning: Missing or malformed separator for ID %d. File format issue?\n", id);
+                     goto cleanup_error;
+                }
+
+                fclose(file);
+                return foundPatient;
+
+            cleanup_error: // Label for error cleanup and return
+                free(foundPatient); // Free if reading fails
+                foundPatient = NULL;
+                fprintf(stderr, "Error reading complete record for ID %d. Data might be incomplete.\n", id);
             }
         }
     }
-
     fclose(file);
-    if (!found)
-    {
-        free(patient);
-        return NULL;
-    }
-    return patient;
+    return NULL; // Patient not found or error occurred
 }
 
 // Function to update patient records
+// Your existing updatePatientRecord function (adjusted for consistency)
 bool updatePatientRecord(struct Patient *patient)
 {
-    FILE *file = fopen("patient_details.txt", "r");
+    FILE *file = fopen(FILENAME, "r");
     FILE *temp = fopen("temp.txt", "w");
-    if (!file || !temp)
+    if (!file || !temp) {
+        perror("Error opening files for update");
+        if (file) fclose(file);
+        if (temp) fclose(temp);
         return false;
+    }
 
-    char line[256];
+    char line[MAX_FIELD_LEN * 2]; // Increased buffer size for lines
     bool found = false;
+    int line_count_in_record = 11; // Number of lines per patient record (including separator)
+
     while (fgets(line, sizeof(line), file))
     {
         if (strstr(line, "Patient ID:"))
         {
-            int id;
-            sscanf(line, "Patient ID: %d", &id);
-            if (id == patient->id)
+            int id_from_file;
+            sscanf(line, "Patient ID: %d", &id_from_file);
+
+            if (id_from_file == patient->id)
             {
                 found = true;
+                // Write the updated patient's data
+                fprintf(temp, "Patient ID: %d\n", patient->id); // ID comes first in write
                 fprintf(temp, "Name: %s\n", patient->name);
                 fprintf(temp, "Age: %d\n", patient->age);
                 fprintf(temp, "Blood Group: %s\n", patient->bloodGroup);
-                fprintf(temp, "Patient ID: %d\n", patient->id);
                 fprintf(temp, "Vaccines Done: %c\n", patient->vaccinesDone);
                 fprintf(temp, "Area of Treatment: %s\n", patient->areaOfTreatment);
                 fprintf(temp, "Insurance: %s\n", patient->insurance);
-                fprintf(temp, "Phone Number: %lld\n", patient->phoneNumber);
+                fprintf(temp, "Phone Number: %s\n", patient->phoneNumber);
                 fprintf(temp, "Hospital Assigned: %s\n", patient->hospitalAssigned);
-                fprintf(temp, "Optimal Cost: %.2lf\n", patient->optimalCost);
-                fprintf(temp, "-----------------\n");
+                fprintf(temp, "Optimal Cost: %.2lf INR\n", patient->optimalCost);
+                fprintf(temp, "-----------------\n"); // Separator line
 
-                // Skip original record
-                for (int i = 0; i < 11; i++)
-                {
-                    fgets(line, sizeof(line), file);
+                for (int i = 0; i < (line_count_in_record - 1); i++) {
+                    if (fgets(line, sizeof(line), file) == NULL) {
+                        // Handle unexpected EOF if file format is inconsistent
+                        fprintf(stderr, "Warning: Unexpected EOF while skipping record lines.\n");
+                        break;
+                    }
                 }
             }
             else
             {
-                fputs(line, temp);
+                // If not the target patient, write the ID line and then the rest of its record
+                fputs(line, temp); // Write the "Patient ID" line
+
+                // Write the remaining (line_count_in_record - 1) lines of this record
+                for (int i = 0; i < (line_count_in_record - 1); i++) {
+                     if (fgets(line, sizeof(line), file) != NULL) {
+                        fputs(line, temp);
+                     } else {
+                        // Handle unexpected EOF
+                        break;
+                     }
+                }
             }
         }
         else
         {
+            // This case should ideally not be reached if the file format is strict
+            // (i.e., every record starts with "Patient ID:").
+            // If it can happen, you might need more robust parsing.
             fputs(line, temp);
         }
     }
@@ -701,16 +784,17 @@ bool updatePatientRecord(struct Patient *patient)
 
     if (found)
     {
-        remove("patient_details.txt");
-        rename("temp.txt", "patient_details.txt");
+        remove(FILENAME);
+        rename("temp.txt", FILENAME);
     }
     else
     {
-        remove("temp.txt");
+        remove("temp.txt"); // Clean up temp file if patient not found
     }
 
     return found;
 }
+
 
 // Function to generate statistics
 void generatePatientStatistics()
@@ -759,6 +843,13 @@ void generatePatientStatistics()
            totalPatients > 0 ? (totalCost / totalPatients) : 0);
     printf("=======================\n");
 }
+
+void clear_input_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
 
 int main()
 {
@@ -1158,7 +1249,7 @@ int main()
                 printf("Vaccines Done: %c\n", patient->vaccinesDone);
                 printf("Area of Treatment: %s\n", patient->areaOfTreatment);
                 printf("Insurance: %s\n", patient->insurance);
-                printf("Phone Number: %lld\n", patient->phoneNumber);
+                printf("Phone Number: %s\n", patient->phoneNumber);
                 printf("Hospital Assigned: %s\n", patient->hospitalAssigned);
                 printf("Optimal Cost: %.2f INR\n", patient->optimalCost);
                 free(patient);
@@ -1170,17 +1261,122 @@ int main()
             break;
         }
 
-        case 5:
+         case 5:
         {
-            int updateId;
+           int updateId;
             printf("Enter Patient ID to update: ");
-            scanf("%d", &updateId);
+            if (scanf("%d", &updateId) != 1) {
+                printf("Invalid input for Patient ID.\n");
+                clear_input_buffer();
+                return 1;
+            }
+            clear_input_buffer(); // Clear buffer after scanf
 
             struct Patient *patient = searchPatientById(updateId);
             if (patient)
             {
-                printf("Enter new phone number: ");
-                scanf("%lld", &patient->phoneNumber);
+                char input_buffer[MAX_FIELD_LEN]; // Buffer for string inputs
+                char char_input;
+                int int_input;
+                double double_input;
+                char num_str[30]; // Buffer for numerical inputs as strings
+
+                printf("\n--- Updating Patient ID: %d ---\n", patient->id);
+                printf("Current Name: %s\n", patient->name);
+                printf("Current Age: %d\n", patient->age);
+                printf("Current Blood Group: %s\n", patient->bloodGroup);
+                printf("Current Vaccines Done: %c\n", patient->vaccinesDone);
+                printf("Current Area of Treatment: %s\n", patient->areaOfTreatment);
+                printf("Current Insurance: %s\n", patient->insurance);
+                printf("Current Phone Number: %s\n", patient->phoneNumber);
+                printf("Current Hospital Assigned: %s\n", patient->hospitalAssigned);
+                printf("Current Optimal Cost: %.2lf\n", patient->optimalCost);
+                printf("-------------------------------\n");
+
+                // Name
+                printf("Enter new name (leave blank to keep '%s'): ", patient->name);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin);
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    strcpy(patient->name, input_buffer);
+                }
+                
+                // Age
+                printf("Enter new age (leave blank to keep '%d'): ", patient->age);
+                fgets(num_str, sizeof(num_str), stdin);
+                num_str[strcspn(num_str, "\n")] = 0; // Remove newline
+                if (strlen(num_str) > 0) {
+                    if (sscanf(num_str, "%d", &int_input) == 1) {
+                        patient->age = int_input;
+                    } else {
+                        printf("Invalid input for age. Keeping original.\n");
+                    }
+                }
+                
+                // Blood Group
+                printf("Enter new blood group (leave blank to keep '%s'): ", patient->bloodGroup);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin);
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    strcpy(patient->bloodGroup, input_buffer);
+                }
+                
+                // Vaccines Done
+                printf("Enter vaccines done (Y/N, leave blank to keep '%c'): ", patient->vaccinesDone);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin); // Read as string
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    if (sscanf(input_buffer, "%c", &char_input) == 1 &&
+                        (char_input == 'Y' || char_input == 'N' || char_input == 'y' || char_input == 'n')) {
+                        patient->vaccinesDone = toupper(char_input); // Convert to uppercase for consistency
+                    } else {
+                        printf("Invalid input for vaccines done. Keeping original.\n");
+                    }
+                }
+                
+                // Area of Treatment
+                printf("Enter new area of treatment (leave blank to keep '%s'): ", patient->areaOfTreatment);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin);
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    strcpy(patient->areaOfTreatment, input_buffer);
+                }
+                
+                // Insurance
+                printf("Enter new insurance details (leave blank to keep '%s'): ", patient->insurance);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin);
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    strcpy(patient->insurance, input_buffer);
+                }
+                
+                // Phone Number
+                printf("Enter new phone number (leave blank to keep '%s'): ", patient->phoneNumber);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin);
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    strcpy(patient->phoneNumber, input_buffer);
+                }
+                
+                // Hospital Assigned
+                printf("Enter new hospital assigned (leave blank to keep '%s'): ", patient->hospitalAssigned);
+                fgets(input_buffer, MAX_FIELD_LEN, stdin);
+                input_buffer[strcspn(input_buffer, "\n")] = 0; // Remove newline
+                if (strlen(input_buffer) > 0) {
+                    strcpy(patient->hospitalAssigned, input_buffer);
+                }
+                
+                // Optimal Cost
+                printf("Enter new optimal cost (leave blank to keep '%.2lf'): ", patient->optimalCost);
+                fgets(num_str, sizeof(num_str), stdin);
+                num_str[strcspn(num_str, "\n")] = 0; // Remove newline
+                if (strlen(num_str) > 0) {
+                    if (sscanf(num_str, "%lf", &double_input) == 1) {
+                        patient->optimalCost = double_input;
+                    } else {
+                        printf("Invalid input for optimal cost. Keeping original.\n");
+                    }
+                }
 
                 if (updatePatientRecord(patient))
                 {
@@ -1190,14 +1386,14 @@ int main()
                 {
                     printf("Error updating record.\n");
                 }
-                free(patient);
+                free(patient); // Free the dynamically allocated patient struct
             }
             else
             {
                 printf("Patient not found.\n");
             }
             break;
-        }
+        }        
 
         case 6:
             generatePatientStatistics();
