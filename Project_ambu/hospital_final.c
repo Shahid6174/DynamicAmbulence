@@ -170,13 +170,12 @@ NODE insert_rear(char hospital_name[], int casualties, int weight, NODE first)
 }
 
 // Function to display the linked list
-void display(NODE first, int rating) {
+void display(NODE first) {
     if (first == NULL) {
         printf("  No connected hospitals found.\n");
         return;
     }
     NODE cur = first;
-    printf("  Rating: %d stars\n  ", rating);
     while (cur != NULL) {
         printf("%s (Casualties: %d, Road Weight: %d)", 
                cur->hospital_name, cur->casualtiesPresent, cur->weight);
@@ -214,12 +213,12 @@ NODE *createAdjacencyList(int hospitals, int matrix[15][15], int casualtiesMatri
 }
 
 // Update the displayAdjacencyList call
-void displayAdjacencyList(NODE *adjList, int hospitals, char hospital_names[15][50], int ratings[15]) {
+void displayAdjacencyList(NODE *adjList, int hospitals, char hospital_names[15][50]) {
     printf("Displaying the adjacency lists for all hospitals:\n\n");
     for (int i = 0; i < hospitals; i++) {
         printf("Hospital: %s\n", hospital_names[i]);
         printf("Connected Hospitals / Neighbors:\n");
-        display(adjList[i], ratings[i]);
+        display(adjList[i]);
         printf("------------------------------\n\n");
     }
     printf("End of adjacency lists.\n");
@@ -625,12 +624,6 @@ struct Patient* searchPatientById(int id) {
                     }
                 } else { goto cleanup_error; }
 
-                // Skip Patient ID line (if your file includes it again after blood group, usually not)
-                // Based on your updatePatientRecord, Patient ID is WRITTEN first.
-                // In searchPatientById, it's the first thing you read. So, you don't skip it here
-                // unless it appears a second time in the record (unlikely/bad format).
-                // Let's assume your file format means after Blood Group comes Vaccines Done, not ID again.
-
                 // Vaccines Done
                 if (fgets(line, sizeof(line), file)) {
                     char temp_char;
@@ -700,7 +693,6 @@ struct Patient* searchPatientById(int id) {
 }
 
 // Function to update patient records
-// Your existing updatePatientRecord function (adjusted for consistency)
 bool updatePatientRecord(struct Patient *patient)
 {
     FILE *file = fopen(FILENAME, "r");
@@ -765,9 +757,6 @@ bool updatePatientRecord(struct Patient *patient)
         }
         else
         {
-            // This case should ideally not be reached if the file format is strict
-            // (i.e., every record starts with "Patient ID:").
-            // If it can happen, you might need more robust parsing.
             fputs(line, temp);
         }
     }
@@ -842,33 +831,10 @@ void clear_input_buffer() {
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-// Add after readHospitalNamesFromFile function
-void readHospitalRatings(int ratings[15], const char *filename) {
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("Error opening ratings file %s for reading.\n", filename);
-        exit(EXIT_FAILURE);
-    }
-    
-    for (int i = 0; i < 15; i++) {
-        if (fscanf(file, "%d", &ratings[i]) != 1) {
-            printf("Error reading rating for hospital %d\n", i + 1);
-            fclose(file);
-            exit(EXIT_FAILURE);
-        }
-        // Skip the rest of the line
-        char buffer[256];
-        fgets(buffer, sizeof(buffer), file);
-    }
-    fclose(file);
-}
-
-// Add this function before main
 double calculateHospitalScore(int distance, int rating) {
-    // Lower score is better
-    // Distance has more weight than rating, but rating breaks ties
     return distance - (rating * 0.5);
 }
+
 
 void saveFeedback(int hospitalNum, const char *feedback, int rating, char hospital_names[][50]) {
     FILE *file = fopen("hospital_feedback.txt", "r");
@@ -926,7 +892,10 @@ void saveFeedback(int hospitalNum, const char *feedback, int rating, char hospit
 void displayHospitalFeedback(int hospitalNum, char hospital_names[][50]) {
     FILE *file = fopen("hospital_feedback.txt", "r");
     if (!file) {
-        printf("No feedback records available.\n");
+        printf("\n=== Feedback for %s ===\n", hospital_names[hospitalNum-1]);
+        printf("Status: Not Rated\n");
+        printf("No feedback available yet.\n");
+        printf("================================\n");
         return;
     }
 
@@ -934,6 +903,7 @@ void displayHospitalFeedback(int hospitalNum, char hospital_names[][50]) {
     bool found = false;
     bool inTargetHospital = false;
     int feedbackCount = 0;
+    double totalRating = 0;
 
     printf("\n=== Feedback for %s ===\n", hospital_names[hospitalNum-1]);
     
@@ -953,24 +923,67 @@ void displayHospitalFeedback(int hospitalNum, char hospital_names[][50]) {
             break;
         }
 
-        // Print feedback with serial numbers
+        // Process feedback and ratings
         if (inTargetHospital && strlen(line) > 0) {
             if (strstr(line, "Rating:")) {
                 feedbackCount++;
+                int rating;
+                sscanf(line, "Rating: %d", &rating);
+                totalRating += rating;
                 printf("\nFeedback #%d:\n", feedbackCount);
             }
             printf("%s\n", line);
         }
     }
 
-    if (!found) {
-        printf("No feedback available for this hospital.\n");
+    if (!found || feedbackCount == 0) {
+        printf("Status: Not Rated\n");
+        printf("No feedback available yet.\n");
     } else {
-        printf("\nTotal Feedback Entries: %d\n", feedbackCount);
+        double averageRating = totalRating / feedbackCount;
+        printf("\nAverage Rating: %.1f stars\n", averageRating);
+        printf("Total Feedback Entries: %d\n", feedbackCount);
     }
     
     printf("================================\n");
     fclose(file);
+}
+
+double calculateAverageFeedbackRating(int hospitalNum, char hospital_names[][50]) {
+    FILE *file = fopen("hospital_feedback.txt", "r");
+    if (!file) {
+        return 0.0;
+    }
+
+    char line[1000];
+    bool inTargetHospital = false;
+    int totalRating = 0;
+    int feedbackCount = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        // Check if this is our target hospital
+        if (strstr(line, hospital_names[hospitalNum-1])) {
+            inTargetHospital = true;
+            continue;
+        }
+
+        // Stop when we hit the next separator
+        if (inTargetHospital && strstr(line, "-----------------------------------------------------")) {
+            break;
+        }
+
+        // Count ratings while we're in the target hospital section
+        if (inTargetHospital && strstr(line, "Rating:")) {
+            int rating;
+            if (sscanf(line, "Rating: %d", &rating) == 1) {
+                totalRating += rating;
+                feedbackCount++;
+            }
+        }
+    }
+
+    fclose(file);
+    return feedbackCount > 0 ? (double)totalRating / feedbackCount : 0.0;
 }
 
 int main()
@@ -1004,14 +1017,12 @@ int main()
     int weights[15][15];
     char hospital_names[15][50];
     int moneyFactor = 500;
-    int hospital_ratings[15];
 
     // Read matrices from files
     readMatrixFromFile(matrix, matrix_file);
     readMatrixFromFile(casualtiesMatrix, casualties_file);
     readMatrixFromFile(weights, weights_file);
     readHospitalNamesFromFile(hospital_names, hospital_names_file);
-    readHospitalRatings(hospital_ratings, "hospital_ratings.txt");
 
     NODE *adjList = createAdjacencyList(hospitals, matrix, casualtiesMatrix, weights, hospital_names);
 
@@ -1124,6 +1135,17 @@ int main()
                 int averageWeight = minWeight;
                 double optimalCost = averageWeight * moneyFactor;
 
+                if (nearestHospital != -1) {
+                    // Display feedback for the nearest hospital
+                    printf("\n=== Current Feedback for %s ===\n", hospital_names[nearestHospital-1]);
+                    double avgRating = calculateAverageFeedbackRating(nearestHospital, hospital_names);
+                    if (avgRating > 0) {
+                        printf("Average User Rating: %.1f stars\n", avgRating);
+                    } else {
+                        printf("Status: Not Rated\n");
+                    }
+                    displayHospitalFeedback(nearestHospital, hospital_names);
+                }
                 if (nearestHospital != -1)
                 {
                     // Show ambulance list again BEFORE dispatch
@@ -1215,7 +1237,7 @@ int main()
                 if (src == dest) {
                     printf("\nSource and destination are the same hospital.\n");
                     printf("Hospital: %s\n", hospital_names[src-1]);
-                    printf("Rating: %d stars\n", hospital_ratings[src-1]);
+                    
                     printf("No travel required - Cost: 0 INR\n\n");
                     
                     // Handle patient details even for same location
@@ -1305,13 +1327,13 @@ int main()
                         // Consider alternative hospitals within 20% longer route
                         double threshold = averageWeight * 1.2;
                         int bestHospital = dest;
-                        double bestScore = calculateHospitalScore(averageWeight, hospital_ratings[dest-1]);
+                        double bestScore = calculateHospitalScore(averageWeight, calculateAverageFeedbackRating(dest, hospital_names));
                         
                         for (int alt = 0; alt < hospitals; alt++) {
                             if (alt != dest - 1) {
                                 double altWeight = distance[alt];
                                 if (altWeight <= threshold) {
-                                    double altScore = calculateHospitalScore(altWeight, hospital_ratings[alt]);
+                                    double altScore = calculateHospitalScore(altWeight, calculateAverageFeedbackRating(alt + 1, hospital_names));
                                     if (altScore < bestScore) {
                                         bestScore = altScore;
                                         bestHospital = alt + 1;
@@ -1322,10 +1344,20 @@ int main()
                         
                         if (bestHospital != dest) {
                             printf("\nBased on distance and hospital rating:\n");
-                            printf("Original hospital: %s (Rating: %d stars)\n", 
-                                   hospital_names[dest-1], hospital_ratings[dest-1]);
-                            printf("Recommended hospital: %s (Rating: %d stars)\n", 
-                                   hospital_names[bestHospital-1], hospital_ratings[bestHospital-1]);
+                            double origRating = calculateAverageFeedbackRating(dest, hospital_names);
+                            double recRating = calculateAverageFeedbackRating(bestHospital, hospital_names);
+                            if(origRating >0)
+                                printf("Original hospital: %s (Hospital Rating: %.1f stars)\n", 
+                                        hospital_names[dest-1], origRating);
+                            else
+                                printf("Original hospital: %s (Hospital Rating: Not Rated)\n", 
+                                        hospital_names[dest-1]);
+                            if(recRating > 0)
+                                printf("Recommended hospital: %s (Hospital Rating: %.1f stars)\n", 
+                                        hospital_names[bestHospital-1], recRating);
+                            else
+                                printf("Recommended hospital: %s (Hospital Rating: Not Rated)\n", 
+                                        hospital_names[bestHospital-1]);
                             printf("Would you like to switch to the recommended hospital? (y/n): ");
                             char choice;
                             scanf(" %c", &choice);
@@ -1395,7 +1427,21 @@ int main()
                             
                         }
                         
-                        printf("\nHospital Rating: %d stars\n", hospital_ratings[dest-1]);
+                        // Display feedback for the chosen/recommended hospital
+                        printf("\n=== Current Feedback for %s ===\n", hospital_names[dest-1]);
+                        double avgRating = calculateAverageFeedbackRating(dest, hospital_names);
+                        if (avgRating > 0) {
+                            printf("Hospital Rating: %.1f stars\n", avgRating);
+                        } else {
+                            printf("Status: Not Rated\n");
+                        }
+                        displayHospitalFeedback(dest, hospital_names);
+                        
+                        double currentRating = calculateAverageFeedbackRating(dest, hospital_names);
+                        if(currentRating > 0)
+                            printf("Current Hospital Rating: %.1f stars\n", currentRating);
+                        else
+                            printf("Current Hospital Rating: Not Rated\n");
                         printf("Average Edge Weight: %.2lf\n", averageWeight);
                         double optimalCost = averageWeight * moneyFactor;
                         printf("Optimal Cost: %.2lf INR\n", optimalCost);
@@ -1438,27 +1484,33 @@ int main()
                         printf("No direct or adjacent edge found between the source and destination.\n");
                     }
                 }
+            }
             break;
             
 
         case 2:
-            // Validate near_hosp input
-            while (1)
-            {
-                printf("Enter the hospital number to print its name: ");
+            while (1) {
+                printf("Enter the hospital number to print its name and feedback: ");
                 if (scanf("%d", &near_hosp) == 1 && near_hosp >= 1 && near_hosp <= hospitals)
                     break;
                 printf("Invalid hospital number. Please enter a number between 1 and %d.\n", hospitals);
-                while (getchar() != '\n')
-                    ;
+                while (getchar() != '\n');
             }
             printHospitalName(near_hosp, hospital_names);
-            printf("\nHospital Rating: %d stars\n", hospital_ratings[near_hosp - 1]);
+            
+            // Get and display average feedback rating instead of static rating
+            double avgRating = calculateAverageFeedbackRating(near_hosp, hospital_names);
+            if (avgRating > 0) {
+                printf("\nHospital Feedback Rating: %.1f stars (based on user feedback)\n", avgRating);
+            } else {
+                printf("\nNo user feedback ratings available yet\n");
+            }
+            
             displayHospitalFeedback(near_hosp, hospital_names);
             break;
 
         case 3:
-            displayAdjacencyList(adjList, hospitals, hospital_names, hospital_ratings);
+            displayAdjacencyList(adjList, hospitals, hospital_names);
             break;
 
         case 4:
@@ -1676,5 +1728,4 @@ int main()
             printf("Invalid choice. Please enter a valid option.\n");
         }
     }
-}
 }
