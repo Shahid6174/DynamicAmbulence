@@ -870,6 +870,109 @@ double calculateHospitalScore(int distance, int rating) {
     return distance - (rating * 0.5);
 }
 
+void saveFeedback(int hospitalNum, const char *feedback, int rating, char hospital_names[][50]) {
+    FILE *file = fopen("hospital_feedback.txt", "r");
+    FILE *temp = fopen("temp_feedback.txt", "w");
+    if (!file || !temp) {
+        printf("Error opening feedback files.\n");
+        return;
+    }
+
+    char line[1000];
+    bool found = false;
+    bool inTargetHospital = false;
+    bool justWroteFeedback = false;
+
+    while (fgets(line, sizeof(line), file)) {
+        // Check if this is our target hospital's header
+        if (strstr(line, hospital_names[hospitalNum-1])) {
+            inTargetHospital = true;
+            found = true;
+            fputs(line, temp);
+            // Add new feedback right after hospital name with a space
+            fprintf(temp, "Rating: %d stars\n", rating);
+            fprintf(temp, "Feedback: \"%s\"\n\n", feedback);
+            justWroteFeedback = true;
+            continue;
+        }
+
+        // If this is a feedback line and we're not adding new feedback
+        if (strstr(line, "Feedback:")) {
+            fputs(line, temp);
+            fprintf(temp, "\n"); // Add space after existing feedback
+            continue;
+        }
+
+        // Write all other lines normally
+        fputs(line, temp);
+    }
+
+    if (!found) {
+        // If hospital not found, add new entry at end
+        fprintf(temp, "\n%s\n", hospital_names[hospitalNum-1]);
+        fprintf(temp, "Rating: %d stars\n", rating);
+        fprintf(temp, "Feedback: \"%s\"\n\n", feedback);
+        fprintf(temp, "-----------------------------------------------------\n");
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    // Replace original file with temp file
+    remove("hospital_feedback.txt");
+    rename("temp_feedback.txt", "hospital_feedback.txt");
+}
+
+void displayHospitalFeedback(int hospitalNum, char hospital_names[][50]) {
+    FILE *file = fopen("hospital_feedback.txt", "r");
+    if (!file) {
+        printf("No feedback records available.\n");
+        return;
+    }
+
+    char line[1000];
+    bool found = false;
+    bool inTargetHospital = false;
+    int feedbackCount = 0;
+
+    printf("\n=== Feedback for %s ===\n", hospital_names[hospitalNum-1]);
+    
+    while (fgets(line, sizeof(line), file)) {
+        // Remove trailing newline
+        line[strcspn(line, "\n")] = 0;
+        
+        // Check if this is our target hospital
+        if (strstr(line, hospital_names[hospitalNum-1])) {
+            found = true;
+            inTargetHospital = true;
+            continue;
+        }
+
+        // Stop when we hit the next separator
+        if (inTargetHospital && strstr(line, "-----------------------------------------------------")) {
+            break;
+        }
+
+        // Print feedback with serial numbers
+        if (inTargetHospital && strlen(line) > 0) {
+            if (strstr(line, "Rating:")) {
+                feedbackCount++;
+                printf("\nFeedback #%d:\n", feedbackCount);
+            }
+            printf("%s\n", line);
+        }
+    }
+
+    if (!found) {
+        printf("No feedback available for this hospital.\n");
+    } else {
+        printf("\nTotal Feedback Entries: %d\n", feedbackCount);
+    }
+    
+    printf("================================\n");
+    fclose(file);
+}
+
 int main()
 {
     int hospitals = 15;
@@ -924,18 +1027,19 @@ int main()
             printf("4. Search Patient Record\n");
             printf("5. Update Patient Record\n");
             printf("6. Generate Statistics\n");
-            printf("7. Exit\n");
+            printf("7. Give Feedback\n");
+            printf("8. Exit\n");
 
-            if (scanf("%d", &choice) == 1 && choice >= 1 && choice <= 7)
+            if (scanf("%d", &choice) == 1 && choice >= 1 && choice <= 8)
                 break;
-            printf("Invalid choice. Please select a valid option (1-7).\n");
+            printf("Invalid choice. Please select a valid option (1-8).\n");
             while (getchar() != '\n')
                 ;
         }
 
         printf("\n");
 
-        if (choice < 1 || choice > 7)
+        if (choice < 1 || choice > 8)
         {
             printf("Invalid choice. Please select a valid option.\n");
             continue; // This is redundant because we validated, but keep it as is
@@ -1349,6 +1453,8 @@ int main()
                     ;
             }
             printHospitalName(near_hosp, hospital_names);
+            printf("\nHospital Rating: %d stars\n", hospital_ratings[near_hosp - 1]);
+            displayHospitalFeedback(near_hosp, hospital_names);
             break;
 
         case 3:
@@ -1519,10 +1625,51 @@ int main()
         }        
 
         case 6:
+        {
             generatePatientStatistics();
             break;
+        }
 
         case 7:
+        {
+            int feedbackHospital;
+            char feedback[500];
+            int rating;
+
+            // Get hospital number
+            while (1) {
+                printf("\nEnter hospital number (1-15) to provide feedback: ");
+                if (scanf("%d", &feedbackHospital) == 1 && feedbackHospital >= 1 && feedbackHospital <= 15) {
+                    break;
+                }
+                printf("Invalid hospital number. Please enter a number between 1 and 15.\n");
+                while (getchar() != '\n');
+            }
+            while (getchar() != '\n'); // Clear input buffer
+
+            // Get rating
+            while (1) {
+                printf("Enter rating (1-5 stars): ");
+                if (scanf("%d", &rating) == 1 && rating >= 1 && rating <= 5) {
+                    break;
+                }
+                printf("Invalid rating. Please enter a number between 1 and 5.\n");
+                while (getchar() != '\n');
+            }
+            while (getchar() != '\n'); // Clear input buffer
+
+            // Get feedback
+            printf("Enter your feedback (max 500 characters):\n");
+            fgets(feedback, sizeof(feedback), stdin);
+            feedback[strcspn(feedback, "\n")] = 0; // Remove trailing newline
+
+            // Save feedback
+            saveFeedback(feedbackHospital, feedback, rating, hospital_names);
+            printf("\nThank you for your feedback!\n");
+            break;
+        }
+
+        case 8:
             return 0;
 
         default:
