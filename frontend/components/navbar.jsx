@@ -1,6 +1,8 @@
 'use client';
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -47,15 +49,15 @@ export default function Navbar() {
               {open && (
                 <ul className="dropdown-menu dropdown-menu-end show mt-2 shadow-sm" style={{ minWidth: '12rem' }}>
                   <li>
-                    <a className="dropdown-item d-flex align-items-center" href="/settings">
+                    <Link href="/Profile"  className="dropdown-item d-flex align-items-center" >
                       <i className="bi bi-gear me-2 text-secondary"></i> Profile
-                    </a>
+                    </Link>
                   </li>
                   <li><hr className="dropdown-divider" /></li>
                   <li>
-                    <a className="dropdown-item d-flex align-items-center text-danger" href="/logout">
+                    <Link href="/" className="dropdown-item d-flex align-items-center text-danger" >
                       <i className="bi bi-box-arrow-right me-2"></i> Logout
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               )}
