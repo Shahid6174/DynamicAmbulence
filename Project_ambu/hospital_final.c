@@ -136,6 +136,7 @@ struct Patient
     char phoneNumber[MAX_PHONE_NUMBER_LEN]; // Changed to string for easier handling
     char hospitalAssigned[50];
     double optimalCost;
+    int severity; // ADDED: Severity level (1-5)
 };
 
 // Function to insert a node at the rear of the linked list
@@ -328,7 +329,7 @@ bool isValidBloodGroup(const char *bg)
     return false;
 }
 
-bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor)
+bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor, char input1)
 {
     char name[50], bloodGroup[5], insurance[5], areaOfTreatment[50];
     int age, patientId;
@@ -423,12 +424,37 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         printf("Phone number must be 10 digits.\n");
     }
 
+    // Severity Level
+    int severity;
+    while (true)
+    {
+        printf("Enter severity level (1-5): ");
+        scanf("%d", &severity);
+        if (severity >= 1 && severity <= 5)
+            break;
+        printf("Error: Severity must be between 1 and 5. Please try again.\n");
+    }
+
     FILE *patientFile = fopen("patient_details.txt", "a");
     if (patientFile == NULL)
     {
         printf("Error opening patient details file.\n");
         return false;
     }
+    
+    // Calculate cost based on severity
+    double baseCost = (double)averageWeight * moneyFactor;
+    double finalCost = baseCost;
+    
+    // Apply severity multiplier for non-emergency cases
+    if (input1 == 'n') { // Non-emergency case
+        if (severity == 5) finalCost = baseCost * 2.0;
+        else if (severity == 4) finalCost = baseCost * 1.5;
+        else if (severity == 3) finalCost = baseCost * 1.2;
+        else if (severity == 2) finalCost = baseCost * 1.0;
+        else finalCost = baseCost * 0.8; // severity == 1
+    }
+    
     fprintf(patientFile, "Patient ID: %d\n", patientId);
     fprintf(patientFile, "Name: %s\n", name);
     fprintf(patientFile, "Age: %d\n", age);
@@ -437,8 +463,9 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     fprintf(patientFile, "Area of Treatment: %s\n", areaOfTreatment);
     fprintf(patientFile, "Insurance: %s\n", insurance);
     fprintf(patientFile, "Phone Number: %lld\n", phoneNumber);
+    fprintf(patientFile, "Severity Level: %d\n", severity);
     fprintf(patientFile, "Hospital Assigned: %s\n", hospital_names[nearestHospital - 1]);
-    fprintf(patientFile, "Optimal Cost: %.2lf INR\n", (double)averageWeight * moneyFactor);
+    fprintf(patientFile, "Optimal Cost: %.2lf INR\n", finalCost);
     fprintf(patientFile, "-----------------\n");
 
     fclose(patientFile);
@@ -1010,6 +1037,26 @@ int main()
                     printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
                     printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
 
+                    // Get severity for emergency dispatch
+                    int severity;
+                    while (true)
+                    {
+                        printf("Enter severity level (1-5): ");
+                        scanf("%d", &severity);
+                        if (severity >= 1 && severity <= 5)
+                            break;
+                        printf("Error: Severity must be between 1 and 5. Please try again.\n");
+                    }
+
+                    // Severity-based ambulance dispatch
+                    if (severity >= 4) {
+                        printf("\nHIGH SEVERITY CASE (Level %d) - Dispatching ambulance immediately!\n", severity);
+                    } else if (severity >= 2) {
+                        printf("\nMEDIUM SEVERITY CASE (Level %d) - Dispatching ambulance.\n", severity);
+                    } else {
+                        printf("\nLOW SEVERITY CASE (Level %d) - Non-emergency dispatch.\n", severity);
+                    }
+
                     // Find and dispatch the nearest available ambulance
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
                     if (ambIdx != -1)
@@ -1031,7 +1078,7 @@ int main()
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
 
-                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor))
+                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor, input1))
                     {
                         printf("Patient can be admitted to the hospital.\n\n");
                     }
@@ -1039,7 +1086,6 @@ int main()
                     {
                         printf("Patient can not be admitted due to invalid input.\n\n");
                     }
-                    fflush(stdout);
                     break;
                 }
                 else
@@ -1193,7 +1239,7 @@ int main()
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
 
-                    if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor))
+                    if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor, input1))
                     {
                         printf("Patient can be admitted to the hospital.\n\n");
                     }
