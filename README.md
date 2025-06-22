@@ -116,6 +116,7 @@ sudo apt install -y mongodb-mongosh
 
 ```bash
 cd frontend
+cp .env.example .env
 mongorestore --db=healthapp --collection=Hospital src/data/healthapp/Hospital.bson
 mongorestore --db=healthapp --collection=patients src/data/healthapp/patients.bson
 mongorestore --db=healthapp --collection=Users src/data/healthapp/Users.bson
@@ -127,7 +128,14 @@ npm install
 npm run dev
 ```
 ---
+### 7. To update the data
 
+```bash
+mkdir -p src/data/healthapp
+mongodump --db=healthapp --collection=Hospital --out=src/data
+mongodump --db=healthapp --collection=patients --out=src/data
+mongodump --db=healthapp --collection=Users --out=src/data
+```
 ## How It Works
 
 1. **Ambulance Receives Emergency Call:**
