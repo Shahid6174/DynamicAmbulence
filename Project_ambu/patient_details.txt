@@ -23,18 +23,17 @@ Optimal Cost: 1500.00 INR
 Name: Raj
 Age: 19
 Blood Group: O+ve
+Name: 
+Age: 0
+Blood Group: 
 Patient ID: 1333
 Vaccines Done: y
 Area of Treatment: ENT
 Insurance: yes
-Phone Number: 7987987992
+Phone Number: 1234567891
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
-Optimal Cost: 1500.00 INR
+Optimal Cost: 1500.00
 -----------------
-Name: Rai
-Age: 89
-Blood Group: B+ve
-Patient ID: 1334
 Vaccines Done: y
 Area of Treatment: Kidney
 Insurance: no
