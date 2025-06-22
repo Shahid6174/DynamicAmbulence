@@ -138,18 +138,35 @@ mongodump --db=healthapp --collection=Users --out=src/data
 ```
 ## How It Works
 
+
 1. **Ambulance Receives Emergency Call:**
    - The system identifies the ambulance's current location.
 2. **Patient Details Collected:**
    - Information such as severity, location, and requirements are gathered.
 3. **Distance Calculation:**
    - The system calculates the shortest path from the ambulance to all hospitals using the Floyd-Warshall algorithm.
-4. **Hospital Selection:**
-   - The nearest hospital with available capacity is selected.
+4. **Hospital Availability & Routing:**
+   - System checks MongoDB for hospital statuses (beds, ICU, ventilator availability).
+   - Selects the nearest suitable hospital with real-time capacity.
 5. **Ambulance Dispatched:**
    - The ambulance is routed to the selected hospital.
+6. **Ambulance & Location Analysis:**
+   - The system fetches real-time ambulance positions.
+   - Uses Floyd-Warshall algorithm to calculate shortest paths to hospital
+7. **Live Monitoring & Feedback:**
+   - Admin views ongoing cases via Distress Center.
+   - Operators can send real-time feedback or flag delays/issues.
 
 ---
+
+## Data BackBone
+**All the above logic is now supported by:**
+
+  - Modular MongoDB CRUD routes for all core entities (Hospitals, Patients, Users, Ambulances).
+
+  - Dynamically updated data synced with user dashboards.
+
+
 
 ## Contributing
 
