@@ -468,6 +468,7 @@ struct Ambulance
     int id;
     int location;    // 1-based hospital index
     char status[16]; // e.g., "available", "busy"
+    char type[20];   // e.g., "Basic", "ICU", "Ventilator"
 };
 #define MAX_AMBULANCES 20
 
@@ -484,32 +485,59 @@ int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filena
         if (line[0] == '/' || line[0] == '\\' || line[0] == '\n')
             continue; // skip comments/empty
         int id, loc;
-        char status[16];
-        if (sscanf(line, "%d,%d,%15s", &id, &loc, status) == 3)
+        char status_temp[16]; // Temporary buffer for status
+        char type_temp[20];   // Temporary buffer for type
+
+        // Format: AmbulanceID,CurrentHospitalIndex,Status,Type
+        if (sscanf(line, "%d,%d,%15[^,],%19s", &id, &loc, status_temp, type_temp) == 4)
         {
             ambulances[count].id = id;
             ambulances[count].location = loc;
-            strncpy(ambulances[count].status, status, 15);
-            ambulances[count].status[15] = '\0';
+
+            strncpy(ambulances[count].status, status_temp, 15);
+            ambulances[count].status[15] = '\0'; // Ensure null termination
+
+            strncpy(ambulances[count].type, type_temp, 19);
+            ambulances[count].type[19] = '\0'; // Ensure null termination
+
             count++;
         }
     }
     fclose(f);
     return count;
 }
-// Find nearest available ambulance to a given hospital
-int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15])
-{
+// Find nearest available ambulance of a specific type to a given hospital location
+int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15], const char* requiredType) {
     int minDist = INT_MAX, ambIdx = -1;
-    for (int i = 0; i < ambCount; ++i)
-    {
-        if (strcmp(ambulances[i].status, "available") != 0)
+    for (int i = 0; i < ambCount; ++i) {
+        // Check availability
+        if (strcmp(ambulances[i].status, "available") != 0) {
             continue;
-        int dist = weights[ambulances[i].location - 1][src - 1];
-        if (dist > 0 && dist < minDist)
-        {
-            minDist = dist;
-            ambIdx = i;
+        }
+        // Check type
+        if (strcmp(ambulances[i].type, requiredType) != 0) {
+            continue;
+        }
+
+        // If ambulance is already at the source location (src is 1-based for location parameters)
+        if (ambulances[i].location == src) {
+            // If this ambulance is at the source and meets criteria, it's the best option (distance 0)
+            // We only update if this is better than a previously found non-zero distance,
+            // or if no ambulance has been found yet (ambIdx == -1).
+            if (minDist > 0 || ambIdx == -1) { // Check if current minDist is not already 0
+                minDist = 0;
+                ambIdx = i;
+            }
+        } else { // If ambulance is at a different location
+            // Calculate distance from ambulance's location to src (both are 1-based for user context, so convert to 0-based for array access)
+            int dist = weights[ambulances[i].location - 1][src - 1];
+
+            // Ensure it's a valid path (dist > 0, assuming 0 or less means no direct path or error)
+            // And it's shorter than current minDist
+            if (dist > 0 && dist < minDist) {
+                minDist = dist;
+                ambIdx = i;
+            }
         }
     }
     return ambIdx;
@@ -523,16 +551,17 @@ void updateAmbulanceStatus(int ambId, int newLocation, const char *newStatus, co
     FILE *f = fopen(filename, "w");
     if (!f)
         return;
-    fprintf(f, "// Format: AmbulanceID,CurrentHospitalIndex (1-based),Status\n");
+    fprintf(f, "// Format: AmbulanceID,CurrentHospitalIndex (1-based),Status,Type\n"); // Updated comment
     for (int i = 0; i < count; ++i)
     {
         if (ambulances[i].id == ambId)
         {
             ambulances[i].location = newLocation;
             strncpy(ambulances[i].status, newStatus, 15);
-            ambulances[i].status[15] = '\0';
+            ambulances[i].status[15] = '\0'; // Ensure null termination
+            // The type of the ambulance being updated remains unchanged by this function
         }
-        fprintf(f, "%d,%d,%s\n", ambulances[i].id, ambulances[i].location, ambulances[i].status);
+        fprintf(f, "%d,%d,%s,%s\n", ambulances[i].id, ambulances[i].location, ambulances[i].status, ambulances[i].type); // Added type
     }
     fclose(f);
 }
@@ -544,19 +573,26 @@ void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hosp
     int count = 0;
     for (int i = 0; i < ambCount; ++i)
     {
-        int delay = weights[ambulances[i].location - 1][src - 1];
-        printf("  Ambulance %d at %s | Status: %s | ", ambulances[i].id, hospital_names[ambulances[i].location - 1], ambulances[i].status);
-        if (ambulances[i].location == src)
+        int delay = weights[ambulances[i].location - 1][src - 1]; // Assuming src is 1-based for hospital_names and weights access
+        printf("  Ambulance %d (%s) at %s | Status: %s | ",
+               ambulances[i].id,
+               ambulances[i].type,
+               hospital_names[ambulances[i].location - 1], // Assuming location is 1-based
+               ambulances[i].status);
+
+        if (ambulances[i].location == src) // src is the emergency location (1-based)
         {
             printf("Already at emergency location (0 seconds to reach)\n");
         }
-        else if (delay >= 0 && delay < 10000)
+        // Check if ambulance can reach the source (src-1 for 0-based weights array)
+        else if (delay > 0 && delay < INT_MAX) // Check for valid path; delay > 0 means it's not the same location
         {
             printf("Estimated time to reach emergency: %d seconds\n", delay);
         }
         else
         {
-            printf("Cannot reach emergency location directly\n");
+            // If delay is INT_MAX or 0 (if not src itself), it implies no path or error.
+            printf("Path information unavailable or cannot reach emergency location directly\n");
         }
         count++;
     }
@@ -863,6 +899,14 @@ int main()
                 // Show all ambulances and their time delays BEFORE any hospital/casualty logic
                 struct Ambulance ambulances[MAX_AMBULANCES];
                 int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+
+                // ADD PROMPT FOR AMBULANCE TYPE HERE
+                char requiredType[20];
+                printf("\nEnter required ambulance type (e.g., BLS, ALS): "); // Updated prompt text
+                scanf("%19s", requiredType);
+                // Clear input buffer
+                while (getchar() != '\n');
+
                 printf("\n=== AMBULANCE LIST (before hospital selection) ===\n");
                 displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights);
                 printf("=== END OF AMBULANCE LIST ===\n\n");
@@ -871,76 +915,99 @@ int main()
                 printf("\nFinding the nearest hospital possible...\n");
 
                 // Traverse the adjacency list of the input hospital (src)
-                NODE cur = adjList[src - 1];
+                NODE cur = adjList[src - 1]; // src is 1-based for user, adjList is 0-indexed
                 int minWeight = INT_MAX;
-                int nearestHospital = -1;
+                int nearestHospital_idx = -1; // Will store the 0-based index of the nearest hospital
 
                 while (cur != NULL)
                 {
-                    // Extract hospital number from the name
-                    int currentHospitalNumber;
-                    if (sscanf(cur->hospital_name, "%d", &currentHospitalNumber) == 1)
-                    {
-                        // Check if the current edge weight is smaller than the minimum
-                        if (cur->weight < minWeight)
-                        {
-                            minWeight = cur->weight;
-                            nearestHospital = currentHospitalNumber;
+                    int currentDestHospital_idx = -1;
+                    // Find the 0-based index of the hospital name in cur->hospital_name
+                    for (int k = 0; k < hospitals; ++k) { // 'hospitals' var is 15
+                        if (strcmp(hospital_names[k], cur->hospital_name) == 0) {
+                            currentDestHospital_idx = k;
+                            break;
                         }
-                        printf("\nCasualty Level at Hospital %d: %d - ", currentHospitalNumber, cur->casualtiesPresent);
-                        printAdmissionDifficulty(cur->casualtiesPresent);
-                    }
-                    else
-                    {
-                        printf("\nError extracting hospital number from the name: %s\n", cur->hospital_name);
                     }
 
+                    if (currentDestHospital_idx != -1) {
+                        if (cur->weight < minWeight) {
+                            minWeight = cur->weight;
+                            nearestHospital_idx = currentDestHospital_idx; // Store 0-based index
+                        }
+                        printf("\nCasualty Level at Hospital %s (%d): %d - ", hospital_names[currentDestHospital_idx], currentDestHospital_idx + 1, cur->casualtiesPresent);
+                        printAdmissionDifficulty(cur->casualtiesPresent);
+                    } else {
+                        // This case should ideally not happen if hospital_names and adjList are consistent
+                        printf("\nError: Could not find hospital index for connected hospital: %s\n", cur->hospital_name);
+                    }
                     cur = cur->link;
                 }
 
-                // Check if there is a self-loop with a smaller weight
-                if (weights[src - 1][src - 1] < minWeight)
+                // Check if there is a self-loop with a smaller weight (i.e., staying at src is better)
+                // weights is 0-indexed, src is 1-indexed
+                if (weights[src - 1][src - 1] < minWeight && weights[src-1][src-1] != INT_MAX && weights[src-1][src-1] >=0) // Ensure self-loop is valid path
                 {
                     minWeight = weights[src - 1][src - 1];
-                    nearestHospital = src;
+                    nearestHospital_idx = src - 1; // 0-based index for src hospital
                 }
 
                 int averageWeight = minWeight;
-                double optimalCost = averageWeight * moneyFactor;
+                double optimalCost = (averageWeight == INT_MAX) ? -1 : averageWeight * moneyFactor; // Handle no path found
 
-                if (nearestHospital != -1)
+                if (nearestHospital_idx != -1)
                 {
                     // Show ambulance list again BEFORE dispatch
                     printf("\n=== AMBULANCE LIST (before dispatch) ===\n");
-                    displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights);
+                    displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights); // src is patient's location (1-based)
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
+                    // src is 1-based, nearestHospital_idx is 0-based
+                    printf("\nNearest hospital to Region %s (%d) is Hospital %s (%d) with a road rating of %d\n", hospital_names[src-1], src, hospital_names[nearestHospital_idx], nearestHospital_idx + 1, averageWeight);
+                    if(optimalCost != -1) {
+                        printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
+                    } else {
+                        printf("\nOptimal Cost: N/A (No path found or excessive weight)\n");
+                    }
 
-                    printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
-                    printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
 
-                    // Find and dispatch the nearest available ambulance
-                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
+                    // findNearestAmbulance expects src as 1-based patient location
+                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, requiredType);
+
+                    // If specific type not found, try to find a "Basic" ambulance as fallback
+                    if (ambIdx == -1 && strcmp(requiredType, "Basic") != 0) { // Avoid re-searching if "Basic" was already the request
+                        printf("\nNo ambulance of type '%s' found. Searching for a 'Basic' ambulance...\n", requiredType);
+                        ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, "Basic");
+                        if (ambIdx != -1) {
+                            printf("Found a 'Basic' ambulance instead.\n");
+                        }
+                    }
+
                     if (ambIdx != -1)
                     {
-                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
-                        simulateAmbulanceMovement(hospital_names[src - 1], hospital_names[nearestHospital - 1], 30, 80);
-                        updateAmbulanceStatus(ambulances[ambIdx].id, nearestHospital, "busy", "ambulance_locations.txt");
+                        // Dispatch message: ambulance location (1-based), destination hospital (0-based for name)
+                        printf("\nDispatching Ambulance %d (%s) from %s to %s...\n", ambulances[ambIdx].id, ambulances[ambIdx].type, hospital_names[ambulances[ambIdx].location - 1], hospital_names[nearestHospital_idx]);
+                        // simulateAmbulanceMovement: patient location (0-based name) to destination hospital (0-based name)
+                        simulateAmbulanceMovement(hospital_names[src - 1], hospital_names[nearestHospital_idx], 30, 80);
+                        // updateAmbulanceStatus: newLocation is 1-based
+                        updateAmbulanceStatus(ambulances[ambIdx].id, nearestHospital_idx + 1, "busy", "ambulance_locations.txt");
                     }
                     else
                     {
-                        printf("No available ambulance could be dispatched!\n");
+                        // HANDLE NO MATCHING AMBULANCE: destination hospital (0-based for name)
+                        printf("No available ambulance of type '%s' or 'Basic' could be dispatched to %s!\n", requiredType, hospital_names[nearestHospital_idx]);
                     }
                     fflush(stdout);
 
                     // Show all ambulances and their time delays AFTER dispatch
                     int ambCountAfter = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
                     printf("\n=== AMBULANCE LIST (after dispatch) ===\n");
-                    displayAllAmbulances(ambulances, ambCountAfter, hospital_names, src, weights);
+                    displayAllAmbulances(ambulances, ambCountAfter, hospital_names, src, weights); // src is patient's location
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
 
-                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor))
+                    // handlePatientDetails expects nearestHospital as 1-based.
+                    if (handlePatientDetails(src, nearestHospital_idx + 1, averageWeight, hospital_names, moneyFactor))
                     {
                         printf("Patient can be admitted to the hospital.\n\n");
                     }
@@ -953,7 +1020,7 @@ int main()
                 }
                 else
                 {
-                    printf("\nNo adjacent hospitals found for Hospital %d\n", src);
+                    printf("\nNo adjacent hospitals found or path to self for %s (%d)\n", hospital_names[src-1], src);
                 }
             }
             else if (input1 == 'n')
@@ -975,6 +1042,14 @@ int main()
                 // Show all ambulances and their time delays BEFORE hospital selection
                 struct Ambulance ambulances[MAX_AMBULANCES];
                 int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, "ambulance_locations.txt");
+
+                // ADD PROMPT FOR AMBULANCE TYPE HERE
+                char requiredType[20];
+                printf("\nEnter required ambulance type (e.g., BLS, ALS): "); // Updated prompt text
+                scanf("%19s", requiredType);
+                // Clear input buffer
+                while (getchar() != '\n');
+
                 printf("\n=== AMBULANCE LIST (before hospital selection) ===\n");
                 displayAllAmbulances(ambulances, ambCount, hospital_names, src, weights);
                 printf("=== END OF AMBULANCE LIST ===\n\n");
@@ -1079,20 +1154,38 @@ int main()
                     double optimalCost = averageWeight * moneyFactor;
                     printf("Optimal Cost: %.2lf INR\n", optimalCost);
 
-                    // Find and dispatch the nearest available ambulance
-                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
+                    // UPDATE CALL TO findNearestAmbulance
+                    int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, requiredType);
+
+                    // If specific type not found, try to find a "Basic" ambulance as fallback
+                    if (ambIdx == -1 && strcmp(requiredType, "Basic") != 0) { // Avoid re-searching if "Basic" was already the request
+                        printf("\nNo ambulance of type '%s' found. Searching for a 'Basic' ambulance...\n", requiredType);
+                        ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, "Basic");
+                        if (ambIdx != -1) {
+                            printf("Found a 'Basic' ambulance instead.\n");
+                        }
+                    }
+
                     if (ambIdx != -1)
                     {
-                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
+                        printf("\nDispatching Ambulance %d (%s) from %s to %s...\n", ambulances[ambIdx].id, ambulances[ambIdx].type, hospital_names[ambulances[ambIdx].location - 1], hospital_names[dest - 1]);
                         for (int i = routeLen - 1; i > 0; --i)
                         {
+                            // Moving from current step in route to next step in route towards destination
                             simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i - 1]], 15, 60);
                         }
+                         // Final leg: ambulance current location to patient (src), then patient (src) to hospital (dest)
+                        // The loop above handles patient (src) to hospital (dest) if src is part of route.
+                        // However, the ambulance is dispatched from its current location.
+                        // The simulation should ideally be: amb_loc -> src_loc -> dest_loc (hospital)
+                        // For simplicity, current simulation in loop is parts of src_loc -> dest_loc.
+                        // The printed dispatch message correctly states amb_loc.
                         updateAmbulanceStatus(ambulances[ambIdx].id, dest, "busy", "ambulance_locations.txt");
                     }
                     else
                     {
-                        printf("No available ambulance could be dispatched!\n");
+                        // HANDLE NO MATCHING AMBULANCE
+                        printf("No available ambulance of type '%s' or 'Basic' could be dispatched for the route to %s!\n", requiredType, hospital_names[dest-1]);
                     }
 
                     // Show all ambulances and their time delays AFTER dispatch
