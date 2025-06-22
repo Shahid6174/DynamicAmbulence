@@ -973,6 +973,15 @@ int main()
 
                     // findNearestAmbulance expects src as 1-based patient location
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, requiredType); 
+
+                    // If specific type not found, try to find a "Basic" ambulance as fallback
+                    if (ambIdx == -1 && strcmp(requiredType, "Basic") != 0) { // Avoid re-searching if "Basic" was already the request
+                        printf("\nNo ambulance of type '%s' found. Searching for a 'Basic' ambulance...\n", requiredType);
+                        ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, "Basic");
+                        if (ambIdx != -1) {
+                            printf("Found a 'Basic' ambulance instead.\n");
+                        }
+                    }
                     
                     if (ambIdx != -1)
                     {
@@ -986,7 +995,7 @@ int main()
                     else
                     {
                         // HANDLE NO MATCHING AMBULANCE: destination hospital (0-based for name)
-                        printf("No available ambulance of type '%s' could be dispatched to %s!\n", requiredType, hospital_names[nearestHospital_idx]);
+                        printf("No available ambulance of type '%s' or 'Basic' could be dispatched to %s!\n", requiredType, hospital_names[nearestHospital_idx]);
                     }
                     fflush(stdout);
 
@@ -1147,6 +1156,16 @@ int main()
 
                     // UPDATE CALL TO findNearestAmbulance
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, requiredType);
+
+                    // If specific type not found, try to find a "Basic" ambulance as fallback
+                    if (ambIdx == -1 && strcmp(requiredType, "Basic") != 0) { // Avoid re-searching if "Basic" was already the request
+                        printf("\nNo ambulance of type '%s' found. Searching for a 'Basic' ambulance...\n", requiredType);
+                        ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights, "Basic");
+                        if (ambIdx != -1) {
+                            printf("Found a 'Basic' ambulance instead.\n");
+                        }
+                    }
+
                     if (ambIdx != -1)
                     {
                         printf("\nDispatching Ambulance %d (%s) from %s to %s...\n", ambulances[ambIdx].id, ambulances[ambIdx].type, hospital_names[ambulances[ambIdx].location - 1], hospital_names[dest - 1]);
@@ -1166,7 +1185,7 @@ int main()
                     else
                     {
                         // HANDLE NO MATCHING AMBULANCE
-                        printf("No available ambulance of type '%s' could be dispatched for the route to %s!\n", requiredType, hospital_names[dest-1]);
+                        printf("No available ambulance of type '%s' or 'Basic' could be dispatched for the route to %s!\n", requiredType, hospital_names[dest-1]);
                     }
 
                     // Show all ambulances and their time delays AFTER dispatch
