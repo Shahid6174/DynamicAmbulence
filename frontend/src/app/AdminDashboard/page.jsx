@@ -6,11 +6,12 @@ import { useState } from "react"
 
 import Stats from "./(subPages)/stats.jsx"
 import Patients from "./(subPages)/patients.jsx"
-import Appointments from "./(subPages)/appointments.jsx"
-import Billing from "./(subPages)/billing.jsx"
-import Doctors from "./(subPages)/doctors.jsx"
-import Reports from "./(subPages)/reports.jsx"
-import Settings from "./(subPages)/settings.jsx"
+import Hospitals from "./(subPages)/hospitals.jsx"
+
+import Distress from "./(subPages)/distress.jsx"
+import RatingHospital from "./(subPages)/rating_hospital.jsx"
+import UserControl from "./(subPages)/usercontrol.jsx"
+import AmbulanceTracker from "./(subPages)/ambulance_tracker.jsx"
 
 export default function MainApp (props){
   const [section, setSection] = useState(0)
@@ -24,20 +25,16 @@ export default function MainApp (props){
             <div id="dashboardPage" className="content-page">
               <h1 className="h2 text-primary mb-4">Welcome back, Admin!</h1>
               <div className="row g-4" id="statsCards">
-                
+
               </div>
-             
-           
 
                 {section === 0 && <Stats />}
                 {section === 1 && <Patients/>}
-                {section === 2 && < Appointments />}
-                {section === 3 && < Doctors/>}
-                {section === 4 && < Reports />}
-                {section === 5 && < Billing/>}
-                {section === 6 && < Settings />}
-           
-              
+                {section === 2 && < Hospitals />}
+                {section === 3 && < Distress/>}
+                {section === 4 && < RatingHospital />}
+                {section === 5 && < UserControl />}
+                {section === 6 && < AmbulanceTracker />}
 
             </div>
           </main>
