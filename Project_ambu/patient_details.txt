@@ -8,6 +8,9 @@ Insurance: no
 Phone Number: 7987998801
 Hospital Assigned: 8.Cloudnine_Hospital(marathahalli)
 Optimal Cost: 1500.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 1800.00
+Total_expenditure(INR): 7300.23
 -----------------
 Patient ID: 1234
 Name: Rahul
@@ -19,6 +22,9 @@ Insurance: no
 Phone Number: 9798798792
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 4000.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 3000.00
+Total_expenditure(INR): 13900.23
 -----------------
 Patient ID: 1332
 Name: Sid
@@ -30,6 +36,9 @@ Insurance: yes
 Phone Number: 8798798790
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 1800.00
+Total_expenditure(INR): 7300.23
 -----------------
 Patient ID: 1233
 Name: Richard
@@ -41,6 +50,9 @@ Insurance: yes
 Phone Number: 8798790022
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 1500.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 1500.00
+Total_expenditure(INR): 1500.00
 -----------------
 Patient ID: 5555
 Name: ggth
@@ -52,6 +64,9 @@ Insurance: no
 Phone Number: 9976786774
 Hospital Assigned: 2.Aster_CMI_Hospital(sahakarnagar)
 Optimal Cost: 3000.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 3000.00
+Total_expenditure(INR): 3000.00
 -----------------
 Patient ID: 1414
 Name: yash
@@ -63,6 +78,9 @@ Insurance: no
 Phone Number: 7878787878
 Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
 Optimal Cost: 1500.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 1500.00
+Total_expenditure(INR): 1500.00
 -----------------
 Patient ID: 1213
 Name: m
@@ -74,6 +92,9 @@ Insurance: yes
 Phone Number: 1234567891
 Hospital Assigned: 1.Suguna_Hospital(rajajinagar)
 Optimal Cost: 1500.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 1500.00
+Total_expenditure(INR): 1500.00
 -----------------
 Patient ID: 4545
 Name: dbd
@@ -85,6 +106,9 @@ Insurance: yes
 Phone Number: 1212121212
 Hospital Assigned: 5.Fortis_Hospital(nagarbhavi)
 Optimal Cost: 4000.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 4000.00
+Total_expenditure(INR): 4000.00
 -----------------
 Patient ID: 2098
 Name: ashwin
@@ -96,5 +120,8 @@ Insurance: no
 Phone Number: 1234565432
 Hospital Assigned: 14.Sparsh_Hospital(yelahanka)
 Optimal Cost: 1500.00 INR
+Severity: 1.00
+Current_Treatment_Cost(INR): 1500.00
+Total_expenditure(INR): 1500.00
 -----------------
 

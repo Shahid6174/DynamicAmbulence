@@ -16,6 +16,118 @@
 #define MAX_PHONE_NUMBER_LEN 15 
 #define MIN_FUEL_THRESHOLD 20  // Minimum fuel percentage required for dispatch
 #define REFUEL_TIME_MS 3000    // Time taken to refuel (3 seconds)
+#define MAX_PHONE_NUMBER_LEN 15
+
+char current_patient[10]; // Global variable to store current patient ID
+
+
+// Function to get a specific patient parameter by ID
+float get_patient_param(const char* patient_id, const char* param) {
+    FILE *file = fopen("patient_details.txt", "r"); 
+    if (!file) {
+        printf("Could not open file.\n");
+        return -1.0f;
+    }
+
+    char line[256];
+    int found = 0;
+
+    // Find the patient block
+    while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "Patient ID:", 11) == 0) {
+            char id[32];
+            sscanf(line, "Patient ID: %s", id);
+            if (strcmp(id, patient_id) == 0) {
+                found = 1;
+                break;
+            }
+        }
+    }
+
+    if (!found) {
+        fclose(file);
+        return -1.0f; // Patient not found
+    }
+
+    // Now, search for the parameter in the next lines
+    float result = -1.0f;
+    size_t param_len = strlen(param);
+    while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "-----------------", 17) == 0) {
+            break; // End of this patient's block
+        }
+        if (strncmp(line, param, param_len) == 0 && line[param_len] == ':') {
+            // Found the parameter
+            char *value_str = line + param_len + 1;
+            while (*value_str == ' ') value_str++; // Skip spaces
+            // Try to extract float from the value
+            result = strtof(value_str, NULL);
+            break;
+        }
+    }
+
+    fclose(file);
+    return result;
+}
+
+
+// Function to set a specific patient parameter by ID
+int set_patient_param(const char* patient_id, const char* param, float new_value) {
+    FILE *file = fopen("patient_details.txt", "r");
+    if (!file) {
+        printf("Could not open file for reading.\n");
+        return 0;
+    }
+
+    FILE *temp = fopen("temp_patient_details.txt", "w");
+    if (!temp) {
+        printf("Could not open temp file for writing.\n");
+        fclose(file);
+        return 0;
+    }
+
+    char line[256];
+    int found_patient = 0, updated = 0;
+    size_t param_len = strlen(param);
+
+    while (fgets(line, sizeof(line), file)) {
+        // Check for patient block
+        if (strncmp(line, "Patient ID:", 11) == 0) {
+            char id[32];
+            sscanf(line, "Patient ID: %s", id);
+            found_patient = (strcmp(id, patient_id) == 0);
+        }
+
+        // If in the correct patient block, look for the parameter
+        if (found_patient && strncmp(line, param, param_len) == 0 && line[param_len] == ':') {
+            // Write the updated parameter line with float value
+            fprintf(temp, "%s: %.2f\n", param, new_value);
+            updated = 1;
+            found_patient = 0; // Only update the first occurrence in the block
+        } else {
+            // Write the line as is
+            fputs(line, temp);
+        }
+
+        // End of patient block
+        if (found_patient && strncmp(line, "-----------------", 17) == 0) {
+            found_patient = 0;
+        }
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    // Replace original file with updated file
+    if (updated) {
+        remove("patient_details.txt");
+        rename("temp_patient_details.txt", "patient_details.txt");
+    } else {
+        remove("temp_patient_details.txt");
+    }
+
+    return updated;
+}
 
 
 // Helper: check if file is CSV by extension
@@ -139,6 +251,9 @@ struct Patient
     char phoneNumber[MAX_PHONE_NUMBER_LEN]; // Changed to string for easier handling
     char hospitalAssigned[50];
     double optimalCost;
+    float severity;
+    float current_treatment_cost;
+    float total_expenditure;
 };
 
 // Function to insert a node at the rear of the linked list
@@ -323,7 +438,7 @@ bool isValidBloodGroup(const char *bg)
     return false;
 }
 
-bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor)
+bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char hospital_names[15][50], int moneyFactor, int severity)
 {
     char name[50], bloodGroup[5], insurance[5], areaOfTreatment[50];
     int age, patientId;
@@ -344,6 +459,7 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         else
         {
             printf("Patient already exists. Proceeding with hospital assignment...\n");
+            sprintf(current_patient, "%d", patientId);; // Set current patient ID for further operations
             return true;
         }
     }
@@ -434,6 +550,9 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     fprintf(patientFile, "Phone Number: %lld\n", phoneNumber);
     fprintf(patientFile, "Hospital Assigned: %s\n", hospital_names[nearestHospital - 1]);
     fprintf(patientFile, "Optimal Cost: %.2lf INR\n", (double)averageWeight * moneyFactor);
+    fprintf(patientFile, "Severity: %f\n", (float)severity);
+    fprintf(patientFile, "Current_Treatment_Cost(INR): %.2lf\n", (double)averageWeight * moneyFactor * (severity == 5 ? 2.0 : (severity == 4 ? 1.5 : (severity == 3 ? 1.2 : (severity == 2 ? 1.0 : 0.8)))));
+    fprintf(patientFile, "Total_expenditure(INR): %.2lf\n", (double)averageWeight * moneyFactor * (severity == 5 ? 2.0 : (severity == 4 ? 1.5 : (severity == 3 ? 1.2 : (severity == 2 ? 1.0 : 0.8)))));
     fprintf(patientFile, "-----------------\n");
 
     fclose(patientFile);
@@ -685,6 +804,29 @@ struct Patient* searchPatientById(int id) {
                     if (sscanf(line, "Optimal Cost: %lf INR", &foundPatient->optimalCost) != 1) {
                         foundPatient->optimalCost = 0.0; // Default or error value
                         fprintf(stderr, "Warning: Could not parse Optimal Cost for ID %d. Setting to 0.0.\n", id);
+                    }
+                } else { goto cleanup_error; }
+                //severity
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Severity: %f", &foundPatient->severity) != 1) {
+                        foundPatient->severity = 0.0f;
+                        fprintf(stderr, "Warning: Could not parse Severity for ID %d. Setting to 0.0.\n", id);
+                    }
+                } else { goto cleanup_error; }
+
+                // Current_Treatment_Cost(INR)
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Current_Treatment_Cost(INR): %f", &foundPatient->current_treatment_cost) != 1) {
+                        foundPatient->current_treatment_cost = 0.0f;
+                        fprintf(stderr, "Warning: Could not parse Current_Treatment_Cost(INR) for ID %d. Setting to 0.0.\n", id);
+                    }
+                } else { goto cleanup_error; }
+
+                // Total_expenditure(INR)
+                if (fgets(line, sizeof(line), file)) {
+                    if (sscanf(line, "Total_expenditure(INR): %f", &foundPatient->total_expenditure) != 1) {
+                        foundPatient->total_expenditure = 0.0f;
+                        fprintf(stderr, "Warning: Could not parse Total_expenditure(INR) for ID %d. Setting to 0.0.\n", id);
                     }
                 } else { goto cleanup_error; }
 
@@ -1109,7 +1251,19 @@ int main()
 
             if (input1 == 'y')
             {
-                // Validate source hospital input
+                // Validate severity input
+                int severity;
+               
+                while (1)
+                {
+                    printf("Enter the severity of the emergency (1-5): \n");
+                    if (scanf("%d", &severity) == 1 && severity >= 1 && severity <= 5)
+                        break;
+                    printf("Invalid severity. Please enter a number between 1 and 5.\n");
+                    while (getchar() != '\n')
+                        ;
+                }
+                 // Validate source hospital input
                 while (1)
                 {
                     printf("\nSelect a number corresponding to your nearest location.\n");
@@ -1171,6 +1325,13 @@ int main()
                 int averageWeight = minWeight;
                 double optimalCost = averageWeight * moneyFactor;
 
+                // Adjust the optimal cost based on severity
+                if (severity == 5) optimalCost = optimalCost * 2.0;
+                else if (severity == 4) optimalCost = optimalCost * 1.5;
+                else if (severity == 3) optimalCost = optimalCost * 1.2;
+                else if (severity == 2) optimalCost = optimalCost * 1.0;
+                else optimalCost = optimalCost * 0.8;
+
                 if (nearestHospital != -1) {
                     // Display feedback for the nearest hospital
                     printf("\n=== Current Feedback for %s ===\n", hospital_names[nearestHospital-1]);
@@ -1191,7 +1352,17 @@ int main()
                     fflush(stdout);
 
                     printf("\nNearest hospital to Region %d is Hospital %s with a road rating of %d\n", src, hospital_names[nearestHospital - 1], averageWeight);
-                    printf("\nOptimal Cost: %.2lf INR\n", optimalCost);
+                    printf("\nEffective Cost (Including severity Surcharge): %.2lf INR\n", optimalCost);
+
+                    
+                    // Severity-based ambulance dispatch
+                    if (severity >= 4) {
+                        printf("\nHIGH SEVERITY CASE (Level %d) - Dispatching ambulance immediately!\n", severity);
+                    } else if (severity >= 2) {
+                        printf("\nMEDIUM SEVERITY CASE (Level %d) - Dispatching ambulance.\n", severity);
+                    } else {
+                        printf("\nLOW SEVERITY CASE (Level %d) - Non-emergency dispatch.\n", severity);
+                    }
 
                     // Find and dispatch the nearest available ambulance
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
@@ -1220,8 +1391,15 @@ int main()
                     printf("=== END OF AMBULANCE LIST ===\n\n");
                     fflush(stdout);
 
-                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor))
-                    {
+                    if (handlePatientDetails(src, nearestHospital, averageWeight, hospital_names, moneyFactor, severity))
+                    {   
+                        float totalExp;
+        
+                        totalExp = get_patient_param(current_patient,"Total_expenditure(INR)");
+                        totalExp += optimalCost;
+                        set_patient_param(current_patient, "Total_expenditure(INR)", totalExp);
+                        set_patient_param(current_patient,"Current_Treatment_Cost(INR)", (float)optimalCost);
+                        set_patient_param(current_patient,"Severity", (float)severity);
                         printf("Patient can be admitted to the hospital.\n\n");
                     }
                     else
@@ -1283,7 +1461,7 @@ int main()
                     printf("No travel required - Cost: 0 INR\n\n");
                     
                     // Handle patient details even for same location
-                    if (handlePatientDetails(src, dest, 0, hospital_names, moneyFactor)) {
+                    if (handlePatientDetails(src, dest, 0, hospital_names, moneyFactor, false)) {
                         printf("Patient can be admitted to the hospital.\n\n");
                     } else {
                         printf("Patient cannot be admitted due to invalid input.\n\n");
@@ -1517,9 +1695,15 @@ int main()
                         printf("=== END OF AMBULANCE LIST ===\n\n");
                         fflush(stdout);
 
-                        if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor))
-                        {
+                        if (handlePatientDetails(src, dest, averageWeight, hospital_names, moneyFactor, 1))
+                        {   
                             printf("Patient can be admitted to the hospital.\n\n");
+                            float totalExp;
+                            totalExp = get_patient_param(current_patient,"Total_expenditure(INR)");
+                            totalExp += optimalCost;
+                            set_patient_param(current_patient, "Total_expenditure(INR)", totalExp);
+                            set_patient_param(current_patient,"Current_Treatment_Cost(INR)", (float)optimalCost);
+                            set_patient_param(current_patient,"Severity", (float)1);
                         }
                         else
                         {
@@ -1581,6 +1765,9 @@ int main()
                 printf("Phone Number: %s\n", patient->phoneNumber);
                 printf("Hospital Assigned: %s\n", patient->hospitalAssigned);
                 printf("Optimal Cost: %.2f INR\n", patient->optimalCost);
+                printf("Severity: %.2f\n", patient->severity);
+                printf("Current Treatment Cost: %.2f INR\n", patient->current_treatment_cost);
+                printf("Total Expenditure: %.2f INR\n", patient->total_expenditure);
                 free(patient);
             }
             else
@@ -1620,6 +1807,9 @@ int main()
                 printf("Current Phone Number: %s\n", patient->phoneNumber);
                 printf("Current Hospital Assigned: %s\n", patient->hospitalAssigned);
                 printf("Current Optimal Cost: %.2lf\n", patient->optimalCost);
+                printf("Current Severity: %.2f\n", patient->severity);
+                printf("Current Current Treatment Cost: %.2f INR\n", patient->current_treatment_cost);
+                printf("Current Total Expenditure: %.2f INR\n", patient->total_expenditure  );
                 printf("-------------------------------\n");
 
                 // Name
