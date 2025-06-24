@@ -1,14 +1,14 @@
 // Format: AmbulanceID,CurrentHospitalIndex (1-based),Status
 1,12,busy
-2,2,available
+2,4,busy
 3,3,available
 4,4,busy
 5,14,busy
-6,6,available
+6,6,busy
 7,1,busy
 8,12,busy
-9,9,available
-10,10,available
+9,10,busy
+10,7,busy
 11,15,busy
 12,12,busy
 13,13,available
@@ -17,5 +17,5 @@
 16,8,busy
 17,2,available
 18,3,available
-19,4,available
+19,1,busy
 20,5,available
