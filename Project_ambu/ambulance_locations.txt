@@ -1,8 +1,8 @@
 // Format: AmbulanceID,CurrentHospitalIndex,Status,FuelLevel
-1,12,busy,22
+1,12,available,22
 2,2,available,19
 3,14,available,25
-4,4,available,21
+4,4,available,97
 5,14,available,18
 6,6,available,13
 7,1,available,13
@@ -14,9 +14,8 @@
 13,13,available,26
 14,14,available,20
 15,15,available,10
-16,15,busy,18
+16,15,available,18
 17,2,available,22
 18,3,available,24
-19,4,available,21
+19,4,available,100
 20,5,available,23
-

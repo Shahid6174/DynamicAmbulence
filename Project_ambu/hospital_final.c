@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#define AMBULANCE_BUSY_TIME 5
 #define MAX_LINE 1000
 #define MAX_PATIENTS 100
 #define MAX_FIELD_LEN 100
@@ -19,6 +20,12 @@
 #define MAX_PHONE_NUMBER_LEN 15
 
 char current_patient[10]; // Global variable to store current patient ID
+
+struct AvailableLaterArgs {
+    int ambId;
+    int hospital;
+    char filename[128];
+};
 
 
 // Function to get a specific patient parameter by ID
@@ -1164,6 +1171,26 @@ void refuelAmbulance(struct Ambulance *ambulance) {
     printf("\nAmbulance %d refueled to 100%%\n", ambulance->id);
 }
 
+void setAmbulanceAvailableLater(int ambId, int hospital, const char *filename) {
+    sleep(AMBULANCE_BUSY_TIME);
+
+    // Read ambulances from file to get the correct fuel value
+    struct Ambulance ambulances[MAX_AMBULANCES];
+    int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, filename);
+    int fuel = 100; // Default if not found
+
+    for (int i = 0; i < ambCount; ++i) {
+        if (ambulances[i].id == ambId) {
+            fuel = ambulances[i].fuel;
+            break;
+        }
+    }
+
+    updateAmbulanceStatus(ambId, hospital, "available", fuel, filename);
+    printf("Ambulance %d is now available at %d\n", ambId, hospital);
+}
+
+
 int main()
 {
     int hospitals = 15;
@@ -1377,6 +1404,7 @@ int main()
                                             "busy", 
                                             ambulances[ambIdx].fuel,
                                             "ambulance_locations.txt");
+                        setAmbulanceAvailableLater(ambulances[ambIdx].id, nearestHospital, "ambulance_locations.txt");
                     }
                     else
                     {
@@ -1682,6 +1710,7 @@ int main()
                                                 "busy", 
                                                 ambulances[ambIdx].fuel,
                                                 "ambulance_locations.txt");
+                            setAmbulanceAvailableLater(ambulances[ambIdx].id, dest, "ambulance_locations.txt");
                         }
                         else
                         {
