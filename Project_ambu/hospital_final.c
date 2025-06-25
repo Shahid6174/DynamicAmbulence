@@ -9,13 +9,23 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#define AMBULANCE_BUSY_TIME 5
 #define MAX_LINE 1000
 #define MAX_PATIENTS 100
 #define MAX_FIELD_LEN 100
 #define FILENAME "patient_details.txt"
+#define MAX_PHONE_NUMBER_LEN 15 
+#define MIN_FUEL_THRESHOLD 20  // Minimum fuel percentage required for dispatch
+#define REFUEL_TIME_MS 3000    // Time taken to refuel (3 seconds)
 #define MAX_PHONE_NUMBER_LEN 15
 
 char current_patient[10]; // Global variable to store current patient ID
+
+struct AvailableLaterArgs {
+    int ambId;
+    int hospital;
+    char filename[128];
+};
 
 
 // Function to get a specific patient parameter by ID
@@ -587,29 +597,33 @@ struct Ambulance
     int id;
     int location;    // 1-based hospital index
     char status[16]; // e.g., "available", "busy"
+    int fuel; // Fuel level in percentage (0-100)
 };
 #define MAX_AMBULANCES 20
+void refuelAmbulance(struct Ambulance *ambulance);
+void updateAmbulanceStatus(int ambId, int newLocation, const char *newStatus, int newFuel, const char *filename);
+void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15]);
+int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filename);
+int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15]);
 
 // Read ambulances from file
-int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filename)
-{
+int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filename) {
     FILE *f = fopen(filename, "r");
     if (!f)
         return 0;
     char line[128];
     int count = 0;
-    while (fgets(line, sizeof(line), f) && count < maxAmb)
-    {
+    while (fgets(line, sizeof(line), f) && count < maxAmb) {
         if (line[0] == '/' || line[0] == '\\' || line[0] == '\n')
-            continue; // skip comments/empty
-        int id, loc;
+            continue;
+        int id, loc, fuel;
         char status[16];
-        if (sscanf(line, "%d,%d,%15s", &id, &loc, status) == 3)
-        {
+        if (sscanf(line, "%d,%d,%15[^,],%d", &id, &loc, status, &fuel) == 4) {
             ambulances[count].id = id;
             ambulances[count].location = loc;
             strncpy(ambulances[count].status, status, 15);
             ambulances[count].status[15] = '\0';
+            ambulances[count].fuel = fuel;
             count++;
         }
     }
@@ -617,64 +631,73 @@ int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filena
     return count;
 }
 // Find nearest available ambulance to a given hospital
-int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15])
-{
+int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15]) {
     int minDist = INT_MAX, ambIdx = -1;
-    for (int i = 0; i < ambCount; ++i)
-    {
-        if (strcmp(ambulances[i].status, "available") != 0)
+    for (int i = 0; i < ambCount; ++i) {
+        if (strcmp(ambulances[i].status, "available") != 0 || 
+            ambulances[i].fuel < MIN_FUEL_THRESHOLD)
             continue;
         int dist = weights[ambulances[i].location - 1][src - 1];
-        if (dist > 0 && dist < minDist)
-        {
+        if (dist > 0 && dist < minDist) {
             minDist = dist;
             ambIdx = i;
         }
     }
+    
+    if (ambIdx != -1 && ambulances[ambIdx].fuel < MIN_FUEL_THRESHOLD * 2) {
+        // If fuel is low but above minimum threshold, refuel before dispatch
+        refuelAmbulance(&ambulances[ambIdx]);
+        updateAmbulanceStatus(ambulances[ambIdx].id, 
+                            ambulances[ambIdx].location, 
+                            "available", 
+                            100, 
+                            "ambulance_locations.txt");
+    }
+    
     return ambIdx;
 }
 
 // Update ambulance status and location in file
-void updateAmbulanceStatus(int ambId, int newLocation, const char *newStatus, const char *filename)
-{
+void updateAmbulanceStatus(int ambId, int newLocation, const char *newStatus, int newFuel, const char *filename) {
     struct Ambulance ambulances[MAX_AMBULANCES];
     int count = readAmbulances(ambulances, MAX_AMBULANCES, filename);
     FILE *f = fopen(filename, "w");
     if (!f)
         return;
-    fprintf(f, "// Format: AmbulanceID,CurrentHospitalIndex (1-based),Status\n");
-    for (int i = 0; i < count; ++i)
-    {
-        if (ambulances[i].id == ambId)
-        {
+    fprintf(f, "// Format: AmbulanceID,CurrentHospitalIndex,Status,FuelLevel\n");
+    for (int i = 0; i < count; ++i) {
+        if (ambulances[i].id == ambId) {
             ambulances[i].location = newLocation;
             strncpy(ambulances[i].status, newStatus, 15);
             ambulances[i].status[15] = '\0';
+            ambulances[i].fuel = newFuel;
         }
-        fprintf(f, "%d,%d,%s\n", ambulances[i].id, ambulances[i].location, ambulances[i].status);
+        fprintf(f, "%d,%d,%s,%d\n", 
+                ambulances[i].id, 
+                ambulances[i].location, 
+                ambulances[i].status,
+                ambulances[i].fuel);
     }
     fclose(f);
 }
 
 // Display all ambulances and their locations, status, and estimated time to src
-void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15])
-{
+void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15]) {
     printf("\nAmbulance Status List (all ambulances):\n");
     int count = 0;
-    for (int i = 0; i < ambCount; ++i)
-    {
+    for (int i = 0; i < ambCount; ++i) {
         int delay = weights[ambulances[i].location - 1][src - 1];
-        printf("  Ambulance %d at %s | Status: %s | ", ambulances[i].id, hospital_names[ambulances[i].location - 1], ambulances[i].status);
-        if (ambulances[i].location == src)
-        {
+        printf("  Ambulance %d at %s | Status: %s | Fuel: %d%% | ", 
+               ambulances[i].id, 
+               hospital_names[ambulances[i].location - 1], 
+               ambulances[i].status,
+               ambulances[i].fuel);
+        
+        if (ambulances[i].location == src) {
             printf("Already at emergency location (0 seconds to reach)\n");
-        }
-        else if (delay >= 0 && delay < 10000)
-        {
+        } else if (delay >= 0 && delay < 10000) {
             printf("Estimated time to reach emergency: %d seconds\n", delay);
-        }
-        else
-        {
+        } else {
             printf("Cannot reach emergency location directly\n");
         }
         count++;
@@ -1128,6 +1151,46 @@ double calculateAverageFeedbackRating(int hospitalNum, char hospital_names[][50]
     return feedbackCount > 0 ? (double)totalRating / feedbackCount : 0.0;
 }
 
+void refuelAmbulance(struct Ambulance *ambulance) {
+    printf("\nAmbulance %d fuel low (%.0d%%). Sending to refuel station...\n", 
+           ambulance->id, ambulance->fuel);
+    printf("[                                                  ] 0%%");
+    fflush(stdout);
+    
+    for (int i = 1; i <= 50; ++i) {
+        usleep(REFUEL_TIME_MS * 1000 / 50);
+        printf("\r[");
+        for (int j = 0; j < 50; ++j) {
+            printf(j < i ? "#" : " ");
+        }
+        printf("] %d%%", i * 2);
+        fflush(stdout);
+    }
+    
+    ambulance->fuel = 100;
+    printf("\nAmbulance %d refueled to 100%%\n", ambulance->id);
+}
+
+void setAmbulanceAvailableLater(int ambId, int hospital, const char *filename) {
+    sleep(AMBULANCE_BUSY_TIME);
+
+    // Read ambulances from file to get the correct fuel value
+    struct Ambulance ambulances[MAX_AMBULANCES];
+    int ambCount = readAmbulances(ambulances, MAX_AMBULANCES, filename);
+    int fuel = 100; // Default if not found
+
+    for (int i = 0; i < ambCount; ++i) {
+        if (ambulances[i].id == ambId) {
+            fuel = ambulances[i].fuel;
+            break;
+        }
+    }
+
+    updateAmbulanceStatus(ambId, hospital, "available", fuel, filename);
+    printf("Ambulance %d is now available at %d\n", ambId, hospital);
+}
+
+
 int main()
 {
     int hospitals = 15;
@@ -1334,7 +1397,14 @@ int main()
                     {
                         printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
                         simulateAmbulanceMovement(hospital_names[src - 1], hospital_names[nearestHospital - 1], 30, 80);
-                        updateAmbulanceStatus(ambulances[ambIdx].id, nearestHospital, "busy", "ambulance_locations.txt");
+                        int fuelUsed = (int)(averageWeight * 0.5);
+                        ambulances[ambIdx].fuel = ambulances[ambIdx].fuel - fuelUsed;
+                        updateAmbulanceStatus(ambulances[ambIdx].id, 
+                                            nearestHospital, 
+                                            "busy", 
+                                            ambulances[ambIdx].fuel,
+                                            "ambulance_locations.txt");
+                        setAmbulanceAvailableLater(ambulances[ambIdx].id, nearestHospital, "ambulance_locations.txt");
                     }
                     else
                     {
@@ -1633,7 +1703,14 @@ int main()
                             {
                                 simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i - 1]], 15, 60);
                             }
-                            updateAmbulanceStatus(ambulances[ambIdx].id, dest, "busy", "ambulance_locations.txt");
+                            int fuelUsed = (int)(averageWeight * 0.5);
+                            ambulances[ambIdx].fuel = ambulances[ambIdx].fuel - fuelUsed;
+                            updateAmbulanceStatus(ambulances[ambIdx].id, 
+                                                dest, 
+                                                "busy", 
+                                                ambulances[ambIdx].fuel,
+                                                "ambulance_locations.txt");
+                            setAmbulanceAvailableLater(ambulances[ambIdx].id, dest, "ambulance_locations.txt");
                         }
                         else
                         {
