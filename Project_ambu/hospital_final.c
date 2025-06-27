@@ -8,6 +8,28 @@
 #include <unistd.h> // For sleep/usleep
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdbool.h>
+// Helper: confirms the otp
+bool confirmOTP() {
+    srand((unsigned int)time(NULL));
+    int otp = rand() % 900000 + 100000; // 6-digit OTP
+    int userInput;
+    printf("\n=== OTP Confirmation ===\n");
+    printf("Your OTP is: %d\n", otp);
+    printf("Please enter the OTP to confirm dispatch: ");
+    if (scanf("%d", &userInput) != 1) {
+        printf("Invalid input.\n");
+        while (getchar() != '\n');
+        return false;
+    }
+    if (userInput == otp) {
+        printf("OTP confirmed. Proceeding with dispatch.\n");
+        return true;
+    } else {
+        printf("Incorrect OTP. Dispatch cancelled.\n");
+        return false;
+    }
+}
 
 #define AMBULANCE_BUSY_TIME 5
 #define MAX_LINE 1000
@@ -451,6 +473,7 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
     int age, patientId;
     long long phoneNumber;
     char vaccinesDone;
+  
 
     // Patient ID
     while (true)
@@ -539,6 +562,11 @@ bool handlePatientDetails(int src, int nearestHospital, int averageWeight, char 
         if (phoneNumber >= 1000000000LL && phoneNumber <= 9999999999LL)
             break;
         printf("Phone number must be 10 digits.\n");
+    }
+      // OTP confirmation before writing patient details
+    if (!confirmOTP()) {
+        printf("Patient dispatch aborted due to OTP failure.\n");
+        return false;
     }
 
     FILE *patientFile = fopen("patient_details.txt", "a");
@@ -1203,7 +1231,7 @@ int main()
     localTime = localtime(&currentTime);
     printf("\n\nDYNAMIC AMBULANCE DISPATCH SYSTEM\n\n");
     printf("Hospitals and Casualties data are obtained on %s\n", asctime(localTime));
-
+    
     char matrix_file[128] = "matrix.txt";
     char casualties_file[128] = "casualtiesMatrix.txt";
     char weights_file[128] = "weights.txt";
