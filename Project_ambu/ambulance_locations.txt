@@ -15,7 +15,7 @@
 14,14,available,20
 15,15,available,10
 16,15,available,18
-17,2,available,22
+17,2,available,99
 18,3,available,24
 19,4,available,100
-20,5,available,23
+20,14,available,97

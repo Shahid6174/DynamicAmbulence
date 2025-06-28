@@ -633,6 +633,7 @@ void updateAmbulanceStatus(int ambId, int newLocation, const char *newStatus, in
 void displayAllAmbulances(struct Ambulance ambulances[], int ambCount, char hospital_names[15][50], int src, int weights[15][15]);
 int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filename);
 int findNearestAmbulance(struct Ambulance ambulances[], int ambCount, int src, int weights[15][15]);
+void displayDispatchTimestamp(const char* event);
 
 // Read ambulances from file
 int readAmbulances(struct Ambulance ambulances[], int maxAmb, const char *filename) {
@@ -1180,8 +1181,12 @@ double calculateAverageFeedbackRating(int hospitalNum, char hospital_names[][50]
 }
 
 void refuelAmbulance(struct Ambulance *ambulance) {
+    char refuelMsg[200];
     printf("\nAmbulance %d fuel low (%.0d%%). Sending to refuel station...\n", 
            ambulance->id, ambulance->fuel);
+    sprintf(refuelMsg, "Ambulance %d starting refuel process (Current fuel: %d%%)", 
+            ambulance->id, ambulance->fuel);
+    displayDispatchTimestamp(refuelMsg);
     printf("[                                                  ] 0%%");
     fflush(stdout);
     
@@ -1197,6 +1202,8 @@ void refuelAmbulance(struct Ambulance *ambulance) {
     
     ambulance->fuel = 100;
     printf("\nAmbulance %d refueled to 100%%\n", ambulance->id);
+    sprintf(refuelMsg, "Ambulance %d refueling complete (Now at 100%%)", ambulance->id);
+    displayDispatchTimestamp(refuelMsg);
 }
 
 void setAmbulanceAvailableLater(int ambId, int hospital, const char *filename) {
@@ -1218,6 +1225,27 @@ void setAmbulanceAvailableLater(int ambId, int hospital, const char *filename) {
     printf("Ambulance %d is now available at %d\n", ambId, hospital);
 }
 
+void displayDispatchTimestamp(const char* event) {
+    time_t now;
+    struct tm* local_time;
+    char timestamp[26];
+    
+    time(&now);
+    local_time = localtime(&now);
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", local_time);
+    
+    // Display to console
+    printf("\n[%s] %s\n", timestamp, event);
+    
+    // Save to file
+    FILE *timeline = fopen("ambulance_timeline.txt", "a");
+    if (timeline) {
+        fprintf(timeline, "[%s] %s\n", timestamp, event);
+        fclose(timeline);
+    } else {
+        printf("Warning: Could not save to timeline file.\n");
+    }
+}
 
 int main()
 {
@@ -1422,9 +1450,16 @@ int main()
                     // Find and dispatch the nearest available ambulance
                     int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
                     if (ambIdx != -1)
-                    {
-                        printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
+                    {   
+                        char dispatchMsg[200];
+                        sprintf(dispatchMsg, "EMERGENCY: Dispatching Ambulance %d from %s to %s", 
+                                ambulances[ambIdx].id, 
+                                hospital_names[ambulances[ambIdx].location - 1],
+                                hospital_names[src - 1]);
+                        displayDispatchTimestamp(dispatchMsg);
                         simulateAmbulanceMovement(hospital_names[src - 1], hospital_names[nearestHospital - 1], 30, 80);
+                        //printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
+                        //simulateAmbulanceMovement(hospital_names[src - 1], hospital_names[nearestHospital - 1], 30, 80);
                         int fuelUsed = (int)(averageWeight * 0.5);
                         ambulances[ambIdx].fuel = ambulances[ambIdx].fuel - fuelUsed;
                         updateAmbulanceStatus(ambulances[ambIdx].id, 
@@ -1432,6 +1467,15 @@ int main()
                                             "busy", 
                                             ambulances[ambIdx].fuel,
                                             "ambulance_locations.txt");
+                        sprintf(dispatchMsg, "Ambulance %d arrived at %s", 
+                        ambulances[ambIdx].id, 
+                        hospital_names[nearestHospital - 1]);
+                        displayDispatchTimestamp(dispatchMsg);
+                        printf("Ambulance %d dispatched to Hospital %s with a delay of %d seconds.\n", 
+                               ambulances[ambIdx].id, 
+                               hospital_names[nearestHospital - 1], 
+                               averageWeight);
+                        printf("Remaining fuel: %d%%\n", ambulances[ambIdx].fuel);
                         setAmbulanceAvailableLater(ambulances[ambIdx].id, nearestHospital, "ambulance_locations.txt");
                     }
                     else
@@ -1725,8 +1769,14 @@ int main()
                         // Find and dispatch the nearest available ambulance
                         int ambIdx = findNearestAmbulance(ambulances, ambCount, src, weights);
                         if (ambIdx != -1)
-                        {
-                            printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
+                        {   
+                            char dispatchMsg[200];
+                            sprintf(dispatchMsg, "NON-EMERGENCY: Dispatching Ambulance %d from %s to %s", 
+                                    ambulances[ambIdx].id, 
+                                    hospital_names[ambulances[ambIdx].location - 1],
+                                    hospital_names[dest - 1]);
+                            displayDispatchTimestamp(dispatchMsg);
+                            //printf("\nDispatching Ambulance %d from %s...\n", ambulances[ambIdx].id, hospital_names[ambulances[ambIdx].location - 1]);
                             for (int i = routeLen - 1; i > 0; --i)
                             {
                                 simulateAmbulanceMovement(hospital_names[route[i]], hospital_names[route[i - 1]], 15, 60);
@@ -1738,6 +1788,15 @@ int main()
                                                 "busy", 
                                                 ambulances[ambIdx].fuel,
                                                 "ambulance_locations.txt");
+                             sprintf(dispatchMsg, "Ambulance %d completed transport to %s", 
+                                    ambulances[ambIdx].id, 
+                                    hospital_names[dest - 1]);
+                            displayDispatchTimestamp(dispatchMsg);
+                            printf("Ambulance %d dispatched to Hospital %s with a delay of %.2f seconds.\n", 
+                                    ambulances[ambIdx].id, 
+                                    hospital_names[dest - 1], 
+                                    averageWeight);
+                            printf("Remaining fuel: %d%%\n", ambulances[ambIdx].fuel);
                             setAmbulanceAvailableLater(ambulances[ambIdx].id, dest, "ambulance_locations.txt");
                         }
                         else

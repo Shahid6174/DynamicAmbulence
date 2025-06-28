@@ -1,0 +1,8 @@
+[2025-06-26 16:06:58] Ambulance 17 starting refuel process (Current fuel: 22%)
+[2025-06-26 16:07:01] Ambulance 17 refueling complete (Now at 100%)
+[2025-06-26 16:07:01] EMERGENCY: Dispatching Ambulance 17 from 2.Aster_CMI_Hospital(sahakarnagar) to 2.Aster_CMI_Hospital(sahakarnagar)
+[2025-06-26 16:07:03] Ambulance 17 arrived at 2.Aster_CMI_Hospital(sahakarnagar)
+[2025-06-26 16:09:29] Ambulance 20 starting refuel process (Current fuel: 23%)
+[2025-06-26 16:09:32] Ambulance 20 refueling complete (Now at 100%)
+[2025-06-26 16:09:32] NON-EMERGENCY: Dispatching Ambulance 20 from 5.Fortis_Hospital(nagarbhavi) to 14.Sparsh_Hospital(yelahanka)
+[2025-06-26 16:09:35] Ambulance 20 completed transport to 14.Sparsh_Hospital(yelahanka)
