@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
+const AmbulanceMap = dynamic(
+  () => import("../../../../components/AmbulanceMap"),
+  { ssr: false }
+);
 
 export default function AmbulanceTracker() {
   const [ambulances, setAmbulances] = useState([]);
@@ -11,29 +17,35 @@ export default function AmbulanceTracker() {
     setTimeout(() => {
       setAmbulances([
         {
-          id: 'AMB-001',
-          driver: 'Shahid Khan',
-          status: 'en_route',
-          eta: '5 min',
-          hospital: 'Aster CMI Hospital',
-          location: 'MG Road'
+          id: "AMB-001",
+          driver: "Shahid Khan",
+          status: "en_route",
+          eta: "5 min",
+          hospital: "Aster CMI Hospital",
+          location: "MG Road",
+          lat: 12.9716,
+          lng: 77.5946,
         },
         {
-          id: 'AMB-002',
-          driver: 'Ravi Verma',
-          status: 'picked',
-          eta: '12 min',
-          hospital: 'Fortis Hospital',
-          location: 'Indiranagar'
+          id: "AMB-002",
+          driver: "Ravi Verma",
+          status: "picked",
+          eta: "12 min",
+          hospital: "Fortis Hospital",
+          location: "Indiranagar",
+          lat: 12.9784,
+          lng: 77.6408,
         },
         {
-          id: 'AMB-003',
-          driver: 'Anil Joshi',
-          status: 'arrived',
-          eta: '0 min',
-          hospital: 'Manipal Hospital',
-          location: 'Whitefield'
-        }
+          id: "AMB-003",
+          driver: "Anil Joshi",
+          status: "arrived",
+          eta: "0 min",
+          hospital: "Manipal Hospital",
+          location: "Whitefield",
+          lat: 12.9698,
+          lng: 77.7499,
+        },
       ]);
       setLoading(false);
     }, 1000);
@@ -41,11 +53,11 @@ export default function AmbulanceTracker() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'en_route':
+      case "en_route":
         return <span className="badge bg-warning text-dark">En Route</span>;
-      case 'arrived':
+      case "arrived":
         return <span className="badge bg-success">Arrived</span>;
-      case 'picked':
+      case "picked":
         return <span className="badge bg-info text-dark">Picked</span>;
       default:
         return <span className="badge bg-secondary">Unknown</span>;
@@ -92,6 +104,8 @@ export default function AmbulanceTracker() {
           )}
         </div>
       </div>
+
+      <AmbulanceMap ambulances={ambulances} />
     </div>
   );
 }

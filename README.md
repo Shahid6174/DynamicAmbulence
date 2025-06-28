@@ -124,6 +124,7 @@ mongorestore --db=healthapp --collection=Users src/data/healthapp/Users.bson
 ### 6. Run frontend
 
 ```bash
+npm install react-leaflet leaflet
 npm install
 npm run dev
 ```
